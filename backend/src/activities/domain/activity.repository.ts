@@ -1,0 +1,39 @@
+import { RoutePoint } from '../../trackers/domain/tracker-provider.interface';
+import { Activity } from './activity.entity';
+
+export const ACTIVITY_REPOSITORY = Symbol('ACTIVITY_REPOSITORY');
+
+export type ImportActivityData = {
+  userId: string;
+  trackerAccountId: string;
+  externalId: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  avgPaceSecPerKm: number;
+  startedAt: Date;
+  endedAt: Date | null;
+  routePoints: RoutePoint[] | null;
+  rawPayload: unknown;
+};
+
+export type Pagination = { limit: number; offset: number };
+
+export type UserActivityStats = {
+  activityCount: number;
+  totalDistanceMeters: number;
+  totalDurationSeconds: number;
+};
+
+export interface ActivityRepository {
+  /** Идемпотентно: ключ — trackerAccountId + externalId. */
+  upsertMany(activities: ImportActivityData[]): Promise<{ created: number; updated: number }>;
+
+  findById(id: string): Promise<Activity | null>;
+
+  /** Списковые методы не читают routePoints — маршрут догружается через findRoutePoints. */
+  findFeed(userIds: string[], pagination: Pagination): Promise<Activity[]>;
+  findByUser(userId: string, pagination: Pagination): Promise<Activity[]>;
+
+  findRoutePoints(activityId: string): Promise<RoutePoint[] | null>;
+  getUserStats(userId: string): Promise<UserActivityStats>;
+}

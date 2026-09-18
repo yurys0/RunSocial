@@ -1,0 +1,10 @@
+node_modules/
+dist/
+# GraphQL-схема генерируется из декораторов при старте API
+backend/src/schema.gql
+*.tsbuildinfo
+.env
+*.log
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,9 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$PUBLIC_DOMAIN} {
+	# Сертификат Caddy получает и продлевает сам. Сжатие оставляем nginx:
+	# здесь оно сломало бы потоковый SSE.
+	reverse_proxy frontend:80
+}
