@@ -1,0 +1,128 @@
+// Пять моделей домена: маршрут живёт в Activity.routePoints (JSONB), отдельной таблицы под него нет.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TrackerProviderName {
+  STRAVA
+  ADIDAS // Runtastic API (Adidas Running)
+  PACER
+}
+
+enum TrackerAccountStatus {
+  ACTIVE
+  ERROR
+  DISCONNECTED
+}
+
+enum FriendLinkStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  login        String   @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  /// Закрытый профиль: пробежки видны только друзьям, в статистику лендинга не входит
+  isPrivate    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  trackerAccounts     TrackerAccount[]
+  activities          Activity[]
+  likes               ActivityLike[]
+  sentFriendLinks     FriendLink[]     @relation("FriendLinkFrom")
+  receivedFriendLinks FriendLink[]     @relation("FriendLinkTo")
+}
+
+model TrackerAccount {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider TrackerProviderName
+  /// Логин/пароль от трекера, зашифрованные AES-256-GCM (свой IV на запись)
+  encryptedCredentials String
+  /// ID пользователя на стороне трекера: athlete.id | me.guid | account id
+  externalUserId       String?
+  status               TrackerAccountStatus @default(ACTIVE)
+  lastSyncAt           DateTime?
+  createdAt            DateTime             @default(now())
+
+  activities Activity[]
+
+  // Один аккаунт на провайдера у пользователя — иначе непонятно, какой из двух синкать
+  @@unique([userId, provider])
+}
+
+model Activity {
+  id String @id @default(uuid())
+
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackerAccountId String
+  trackerAccount   TrackerAccount @relation(fields: [trackerAccountId], references: [id], onDelete: Cascade)
+
+  /// ID активности на стороне трекера — ключ идемпотентности повторного синка
+  externalId      String
+  distanceMeters  Int
+  durationSeconds Int
+  avgPaceSecPerKm Int
+  startedAt       DateTime
+  /// Фактическое окончание по данным трекера: в durationSeconds время без пауз
+  endedAt         DateTime?
+
+  /// Точки маршрута; null — трекер не отдал трек
+  routePoints Json?
+  /// Сырой ответ провайдера — чтобы не терять данные, которые пока не маппим
+  rawPayload  Json
+
+  createdAt DateTime @default(now())
+
+  likes ActivityLike[]
+
+  @@unique([trackerAccountId, externalId])
+  // Лента и профиль всегда читают активности по пользователю в обратном хронологическом порядке
+  @@index([userId, startedAt(sort: Desc)])
+  @@index([startedAt(sort: Desc)])
+}
+
+// Одна сущность и на заявку, и на состоявшуюся дружбу — состояние в status
+model FriendLink {
+  id         String @id @default(uuid())
+  fromUserId String
+  fromUser   User   @relation("FriendLinkFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User   @relation("FriendLinkTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  status    FriendLinkStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, status])
+}
+
+model ActivityLike {
+  id String @id @default(uuid())
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, activityId])
+  @@index([activityId])
+}
