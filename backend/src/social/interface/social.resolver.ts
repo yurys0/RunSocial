@@ -1,12 +1,21 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Int, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
 import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
+import { CancelFriendRequestUseCase } from '../application/cancel-friend-request.use-case';
 import { ListFriendsUseCase } from '../application/list-friends.use-case';
+import { RemoveFriendUseCase } from '../application/remove-friend.use-case';
+import { RespondFriendRequestUseCase } from '../application/respond-friend-request.use-case';
 import { SearchUsersUseCase } from '../application/search-users.use-case';
-import { FriendRequestType, UserSearchResultType, UserSummaryType } from './dto/social.type';
+import { SendFriendRequestUseCase } from '../application/send-friend-request.use-case';
+import {
+  FriendRequestResultType,
+  FriendRequestType,
+  UserSearchResultType,
+  UserSummaryType,
+} from './dto/social.type';
 
 @Resolver()
 @UseGuards(GqlAuthGuard)
@@ -14,6 +23,10 @@ export class SocialResolver {
   constructor(
     private readonly searchUsers: SearchUsersUseCase,
     private readonly listFriends: ListFriendsUseCase,
+    private readonly sendRequest: SendFriendRequestUseCase,
+    private readonly respondRequest: RespondFriendRequestUseCase,
+    private readonly cancelRequest: CancelFriendRequestUseCase,
+    private readonly removeFriendUseCase: RemoveFriendUseCase,
   ) {}
 
   // Имя поля задано явно: метод нельзя назвать searchUsers — так называется внедрённый use-case
@@ -42,5 +55,32 @@ export class SocialResolver {
   @Query(() => [FriendRequestType], { description: 'Отправленные заявки, ожидающие ответа' })
   outgoingFriendRequests(@CurrentUser() user: AuthenticatedUser) {
     return this.listFriends.outgoing(user.userId);
+  }
+
+  @Mutation(() => FriendRequestResultType, { description: 'Отправить заявку в друзья по логину' })
+  sendFriendRequest(@CurrentUser() user: AuthenticatedUser, @Args('login') login: string) {
+    return this.sendRequest.execute(user.userId, { login });
+  }
+
+  @Mutation(() => FriendRequestResultType, { description: 'Принять входящую заявку' })
+  acceptFriendRequest(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
+    return this.respondRequest.accept(user.userId, id);
+  }
+
+  @Mutation(() => FriendRequestResultType, { description: 'Отклонить входящую заявку' })
+  declineFriendRequest(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
+    return this.respondRequest.decline(user.userId, id);
+  }
+
+  @Mutation(() => Boolean, { description: 'Отменить свою заявку, пока на неё не ответили' })
+  async cancelFriendRequest(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
+    await this.cancelRequest.execute(user.userId, id);
+    return true;
+  }
+
+  @Mutation(() => Boolean, { description: 'Удалить пользователя из друзей' })
+  async removeFriend(@CurrentUser() user: AuthenticatedUser, @Args('userId') userId: string) {
+    await this.removeFriendUseCase.execute(user.userId, userId);
+    return true;
   }
 }

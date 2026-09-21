@@ -1,4 +1,4 @@
-import { Args, Int, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
@@ -7,10 +7,11 @@ import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
 import { MAX_PAGE_SIZE } from '../../shared/pagination/pagination';
 import { ActivityNotFoundError } from '../domain/activities.errors';
 import { GetActivityUseCase } from '../application/get-activity.use-case';
+import { LikeActivityUseCase } from '../application/like-activity.use-case';
 import { avatarUrl } from '../../identity/application/avatar-url';
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
 import { GetFeedUseCase } from '../application/get-feed.use-case';
-import { ActivityAuthorType, ActivityType, RoutePointType } from './dto/activity.type';
+import { ActivityAuthorType, ActivityType, LikeResultType, RoutePointType } from './dto/activity.type';
 
 @Resolver(() => ActivityType)
 @UseGuards(GqlAuthGuard)
@@ -18,6 +19,7 @@ export class ActivitiesResolver {
   constructor(
     private readonly getFeed: GetFeedUseCase,
     private readonly getActivity: GetActivityUseCase,
+    private readonly likeActivity: LikeActivityUseCase,
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
@@ -36,6 +38,16 @@ export class ActivitiesResolver {
   @Query(() => ActivityType)
   activity(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
     return this.getActivity.execute(id, user.userId);
+  }
+
+  @Mutation(() => LikeResultType, { name: 'likeActivity', description: 'Поставить лайк чужой пробежке' })
+  like(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
+    return this.likeActivity.like(user.userId, id);
+  }
+
+  @Mutation(() => LikeResultType, { description: 'Снять свой лайк' })
+  unlikeActivity(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
+    return this.likeActivity.unlike(user.userId, id);
   }
 
   /** Резолвер поля: тяжёлый JSONB читается, только если клиент запросил routePoints. */

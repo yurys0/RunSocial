@@ -11,6 +11,7 @@ import { USER_REPOSITORY } from './domain/user.repository';
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository';
 import { AuthController } from './interface/auth.controller';
 import { AvatarsController } from './interface/avatars.controller';
+import { IdentityResolver } from './interface/identity.resolver';
 import { UsersController } from './interface/users.controller';
 
 @Module({
@@ -25,6 +26,7 @@ import { UsersController } from './interface/users.controller';
     GetProfileUseCase,
     UpdateProfileUseCase,
     AvatarUseCase,
+    IdentityResolver,
   ],
   exports: [USER_REPOSITORY],
 })

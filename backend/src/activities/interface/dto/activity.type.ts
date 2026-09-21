@@ -67,3 +67,9 @@ export class ActivityType {
   @Field(() => [RoutePointType], { nullable: true })
   routePoints?: RoutePointType[] | null;
 }
+
+@ObjectType('LikeResult', { description: 'Итог лайка или его снятия' })
+export class LikeResultType {
+  @Field(() => Int, { description: 'Число лайков после операции' })
+  likeCount: number;
+}

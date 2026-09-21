@@ -1,8 +1,14 @@
 import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { FriendLinkStatus } from '@prisma/client';
 
 import { FriendshipStatus } from '../../domain/friendship-status';
 
 registerEnumType(FriendshipStatus, { name: 'FriendshipStatus' });
+
+registerEnumType(FriendLinkStatus, {
+  name: 'FriendLinkStatus',
+  description: 'Состояние записи о заявке: ждёт ответа, принята, отклонена',
+});
 
 @ObjectType('Friendship')
 export class FriendshipType {
@@ -45,4 +51,13 @@ export class FriendRequestType {
 
   @Field()
   createdAt: Date;
+}
+
+@ObjectType('FriendRequestResult', { description: 'Итог операции над заявкой в друзья' })
+export class FriendRequestResultType {
+  @Field(() => ID, { description: 'Идентификатор заявки' })
+  id: string;
+
+  @Field(() => FriendLinkStatus, { description: 'Состояние заявки после операции' })
+  status: FriendLinkStatus;
 }

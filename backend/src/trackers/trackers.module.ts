@@ -16,6 +16,7 @@ import { TrackerProviderRegistry } from './infrastructure/providers/tracker-prov
 import { SYNC_QUEUE_NAME } from './infrastructure/sync-queue';
 import { SyncEventsController } from './interface/sync-events.controller';
 import { TrackersController } from './interface/trackers.controller';
+import { TrackersResolver } from './interface/trackers.resolver';
 
 @Module({
   imports: [BullModule.registerQueue({ name: SYNC_QUEUE_NAME }), ActivitiesModule],
@@ -31,6 +32,7 @@ import { TrackersController } from './interface/trackers.controller';
     DisconnectTrackerUseCase,
     InitiateSyncUseCase,
     SyncActivitiesUseCase,
+    TrackersResolver,
   ],
   // SyncActivitiesUseCase нужен процессору очереди, который живёт в WorkerModule
   exports: [SyncActivitiesUseCase],

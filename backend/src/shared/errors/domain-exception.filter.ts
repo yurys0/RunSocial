@@ -65,7 +65,11 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return new GraphQLError(exception.message, { extensions: { code: status } });
     }
     if (exception instanceof HttpException) {
-      return new GraphQLError(exception.message, { extensions: { code: exception.getStatus() } });
+      // у ValidationPipe сообщения по полям лежат в теле, а message — общий «Bad Request Exception»
+      const body = exception.getResponse();
+      const detail = typeof body === 'object' ? (body as { message?: string | string[] }).message : undefined;
+      const message = Array.isArray(detail) ? detail.join('; ') : (detail ?? exception.message);
+      return new GraphQLError(message, { extensions: { code: exception.getStatus() } });
     }
 
     this.logger.error(
