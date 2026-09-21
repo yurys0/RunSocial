@@ -14,8 +14,20 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
+import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { AvatarUseCase, UploadedImage } from '../application/avatar.use-case';
 import {
   ALLOWED_AVATAR_TYPES,
@@ -25,6 +37,7 @@ import {
 } from '../application/dto/profile.dto';
 import { GetProfileUseCase } from '../application/get-profile.use-case';
 import { UpdateProfileUseCase } from '../application/update-profile.use-case';
+import { UserView } from '../application/user-view';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 
@@ -39,6 +52,8 @@ const avatarFilePipe = new ParseFilePipe({
 
 @ApiTags('Профиль')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
+@ApiNotFoundResponse({ description: 'Пользователь из токена не найден', type: ErrorResponseDto })
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
@@ -49,18 +64,23 @@ export class UsersController {
   ) {}
 
   @ApiOperation({ summary: 'Свой профиль' })
+  @ApiOkResponse({ type: UserView })
   @Get('me')
   me(@CurrentUser() user: AuthenticatedUser) {
     return this.getProfile.execute(user.userId);
   }
 
   @ApiOperation({ summary: 'Изменить отображаемое имя' })
+  @ApiOkResponse({ description: 'Обновлённый профиль', type: UserView })
+  @ApiBadRequestResponse({ description: 'Ошибка валидации полей', type: ErrorResponseDto })
   @Patch('me')
   update(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto) {
     return this.updateProfile.execute(user.userId, dto);
   }
 
   @ApiOperation({ summary: 'Переключить приватность профиля' })
+  @ApiOkResponse({ description: 'Обновлённый профиль', type: UserView })
+  @ApiBadRequestResponse({ description: 'Ошибка валидации полей', type: ErrorResponseDto })
   @Patch('me/privacy')
   updatePrivacy(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdatePrivacyDto) {
     return this.updateProfile.setPrivacy(user.userId, dto.isPrivate);
@@ -75,6 +95,8 @@ export class UsersController {
       properties: { file: { type: 'string', format: 'binary', description: 'JPEG, PNG или WebP до 5 МБ' } },
     },
   })
+  @ApiCreatedResponse({ description: 'Профиль с новой аватаркой', type: UserView })
+  @ApiBadRequestResponse({ description: 'Файла нет, не тот тип или больше 5 МБ', type: ErrorResponseDto })
   @Post('me/avatar')
   @UseInterceptors(FileInterceptor('file'))
   uploadAvatar(@CurrentUser() user: AuthenticatedUser, @UploadedFile(avatarFilePipe) file: UploadedImage) {
@@ -82,6 +104,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'Удалить аватарку' })
+  @ApiOkResponse({ description: 'Профиль без аватарки', type: UserView })
   @Delete('me/avatar')
   deleteAvatar(@CurrentUser() user: AuthenticatedUser) {
     return this.avatar.remove(user.userId);

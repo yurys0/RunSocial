@@ -23,3 +23,9 @@ export class LikeNotFoundError extends NotFoundError {
     super('Лайк не найден');
   }
 }
+
+export class ProfileIsPrivateError extends ForbiddenError {
+  constructor() {
+    super('Профиль закрыт: пробежки видны только друзьям');
+  }
+}

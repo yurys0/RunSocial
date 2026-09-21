@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MaxLength, MinLength } from 'class-validator';
 
+import { UserView } from '../user-view';
+
 export class RegisterUserDto {
   @ApiProperty({ example: 'runner', description: 'Уникальный логин' })
   @IsString()
@@ -30,4 +32,12 @@ export class LoginDto {
   @IsString()
   @MinLength(1)
   password: string;
+}
+
+export class AuthResponseDto {
+  @ApiProperty({ description: 'JWT для заголовка Authorization: Bearer <token>' })
+  accessToken: string;
+
+  @ApiProperty({ type: () => UserView })
+  user: UserView;
 }

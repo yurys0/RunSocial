@@ -4,14 +4,13 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
 import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
+import { MAX_PAGE_SIZE } from '../../shared/pagination/pagination';
 import { ActivityNotFoundError } from '../domain/activities.errors';
 import { GetActivityUseCase } from '../application/get-activity.use-case';
 import { avatarUrl } from '../../identity/application/avatar-url';
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
 import { GetFeedUseCase } from '../application/get-feed.use-case';
 import { ActivityAuthorType, ActivityType, RoutePointType } from './dto/activity.type';
-
-const MAX_PAGE_SIZE = 50;
 
 @Resolver(() => ActivityType)
 @UseGuards(GqlAuthGuard)

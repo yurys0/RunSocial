@@ -1,16 +1,32 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiAcceptedResponse,
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
+import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { ConnectTrackerUseCase } from '../application/connect-tracker.use-case';
 import { DisconnectTrackerUseCase } from '../application/disconnect-tracker.use-case';
-import { ConnectTrackerDto } from '../application/dto/connect-tracker.dto';
+import { ConnectTrackerDto, SyncAcceptedResponseDto } from '../application/dto/connect-tracker.dto';
 import { InitiateSyncUseCase } from '../application/initiate-sync.use-case';
 import { ListTrackerAccountsUseCase } from '../application/list-tracker-accounts.use-case';
+import { TrackerAccountView } from '../application/tracker-account-view';
 
 @ApiTags('Трекеры')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
 @Controller('trackers')
 @UseGuards(JwtAuthGuard)
 export class TrackersController {
@@ -22,18 +38,28 @@ export class TrackersController {
   ) {}
 
   @ApiOperation({ summary: 'Привязанные трекеры пользователя' })
+  @ApiOkResponse({ type: [TrackerAccountView] })
   @Get()
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.listAccounts.execute(user.userId);
   }
 
   @ApiOperation({ summary: 'Привязать трекер' })
+  @ApiCreatedResponse({ description: 'Трекер привязан, учётные данные проверены', type: TrackerAccountView })
+  @ApiBadRequestResponse({
+    description: 'Ошибка валидации, трекер отверг логин/пароль или недоступен',
+    type: ErrorResponseDto,
+  })
+  @ApiConflictResponse({ description: 'Такой трекер уже привязан', type: ErrorResponseDto })
   @Post()
   connect(@CurrentUser() user: AuthenticatedUser, @Body() dto: ConnectTrackerDto) {
     return this.connectTracker.execute(user.userId, dto);
   }
 
   @ApiOperation({ summary: 'Отвязать трекер' })
+  @ApiParam({ name: 'id', description: 'Идентификатор привязки', format: 'uuid' })
+  @ApiNoContentResponse({ description: 'Привязка удалена вместе с импортированными пробежками' })
+  @ApiNotFoundResponse({ description: 'Привязка не найдена или чужая', type: ErrorResponseDto })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   disconnect(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
@@ -42,6 +68,9 @@ export class TrackersController {
 
   /** Ставит задачу в очередь и сразу отвечает; прогресс придёт через SSE. */
   @ApiOperation({ summary: 'Запустить синхронизацию: задача уходит в очередь, прогресс — в SSE' })
+  @ApiParam({ name: 'id', description: 'Идентификатор привязки', format: 'uuid' })
+  @ApiAcceptedResponse({ description: 'Задача поставлена в очередь', type: SyncAcceptedResponseDto })
+  @ApiNotFoundResponse({ description: 'Привязка не найдена или чужая', type: ErrorResponseDto })
   @Post(':id/sync')
   @HttpCode(HttpStatus.ACCEPTED)
   sync(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {

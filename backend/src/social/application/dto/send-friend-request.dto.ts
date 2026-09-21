@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { FriendLinkStatus } from '@prisma/client';
 import { IsString, MinLength } from 'class-validator';
 
 export class SendFriendRequestDto {
@@ -6,4 +7,12 @@ export class SendFriendRequestDto {
   @IsString()
   @MinLength(1)
   login: string;
+}
+
+export class FriendRequestResponseDto {
+  @ApiProperty({ format: 'uuid', description: 'Идентификатор заявки' })
+  id: string;
+
+  @ApiProperty({ enum: FriendLinkStatus })
+  status: string;
 }
