@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
+import { ElapsedTimeInterceptor } from './shared/elapsed-time.interceptor';
 import { DomainExceptionFilter } from './shared/errors/domain-exception.filter';
 
 async function bootstrap() {
@@ -17,6 +18,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new DomainExceptionFilter());
+  app.useGlobalInterceptors(new ElapsedTimeInterceptor());
 
   const openApi = new DocumentBuilder()
     .setTitle('RunSocial API')
