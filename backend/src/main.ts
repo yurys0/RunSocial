@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { DomainExceptionFilter } from './shared/errors/domain-exception.filter';
@@ -16,6 +17,14 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new DomainExceptionFilter());
+
+  const openApi = new DocumentBuilder()
+    .setTitle('RunSocial API')
+    .setDescription('REST-часть API: мутации, привязка трекеров и SSE-потоки. Чтение — через GraphQL /graphql')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, openApi));
 
   const port = Number(process.env.API_PORT ?? 3000);
   await app.listen(port);
