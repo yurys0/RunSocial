@@ -2,6 +2,7 @@
   "name": "runsocial",
   "version": "1.0.0",
   "private": true,
+  "author": "Юрий Снигур (https://github.com/yurys0)",
   "workspaces": [
     "backend",
     "frontend"
