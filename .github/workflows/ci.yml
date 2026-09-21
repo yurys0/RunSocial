@@ -76,7 +76,7 @@ jobs:
             git pull --ff-only
             export BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:$TAG
             export FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:$TAG
+            docker image prune -af
             docker compose pull backend-api frontend
             docker compose up -d
-            docker image prune -af
           EOF
