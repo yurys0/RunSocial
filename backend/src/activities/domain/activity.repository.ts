@@ -1,3 +1,4 @@
+import { Pagination } from '../../shared/pagination/pagination';
 import { RoutePoint } from '../../trackers/domain/tracker-provider.interface';
 import { Activity } from './activity.entity';
 
@@ -16,7 +17,7 @@ export type ImportActivityData = {
   rawPayload: unknown;
 };
 
-export type Pagination = { limit: number; offset: number };
+export type { Pagination };
 
 export type UserActivityStats = {
   activityCount: number;

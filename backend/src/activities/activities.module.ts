@@ -16,10 +16,11 @@ import { PrismaActivityRepository } from './infrastructure/prisma-activity.repos
 import { ActivitiesController } from './interface/activities.controller';
 import { ActivitiesResolver } from './interface/activities.resolver';
 import { ProfileResolver } from './interface/profile.resolver';
+import { UserActivitiesController } from './interface/user-activities.controller';
 
 @Module({
   imports: [SocialModule, IdentityModule],
-  controllers: [ActivitiesController],
+  controllers: [ActivitiesController, UserActivitiesController],
   providers: [
     { provide: ACTIVITY_REPOSITORY, useClass: PrismaActivityRepository },
     { provide: ACTIVITY_LIKE_REPOSITORY, useClass: PrismaActivityLikeRepository },

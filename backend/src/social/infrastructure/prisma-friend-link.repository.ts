@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FriendLink as PrismaFriendLink, FriendLinkStatus } from '@prisma/client';
 
+import { Pagination } from '../../shared/pagination/pagination';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { FriendLink } from '../domain/friend-link.entity';
 import { FriendLinkRepository } from '../domain/friend-link.repository';
@@ -10,13 +11,19 @@ export class PrismaFriendLinkRepository implements FriendLinkRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Запись одна на пару, поэтому дружба ищется в обе стороны. */
-  async findAcceptedFriendIds(userId: string): Promise<string[]> {
+  async findAcceptedFriendIds(userId: string, pagination?: Pagination): Promise<string[]> {
     const links = await this.prisma.friendLink.findMany({
       where: {
         status: FriendLinkStatus.ACCEPTED,
         OR: [{ fromUserId: userId }, { toUserId: userId }],
       },
       select: { fromUserId: true, toUserId: true },
+      // без сортировки соседние страницы могут пересекаться
+      ...(pagination && {
+        orderBy: { updatedAt: 'desc' as const },
+        skip: pagination.offset,
+        take: pagination.limit,
+      }),
     });
 
     return links.map((link) => (link.fromUserId === userId ? link.toUserId : link.fromUserId));

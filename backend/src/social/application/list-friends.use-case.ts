@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
+import { Pagination } from '../../shared/pagination/pagination';
 import { FriendLink } from '../domain/friend-link.entity';
 import { FRIEND_LINK_REPOSITORY, FriendLinkRepository } from '../domain/friend-link.repository';
 import { toUserSummary, UserSummary } from './user-summary';
@@ -18,8 +19,8 @@ export class ListFriendsUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
-  async friends(userId: string): Promise<UserSummary[]> {
-    const ids = await this.friendLinks.findAcceptedFriendIds(userId);
+  async friends(userId: string, pagination?: Pagination): Promise<UserSummary[]> {
+    const ids = await this.friendLinks.findAcceptedFriendIds(userId, pagination);
     const users = await this.users.findManyByIds(ids);
     return users.map((user) => toUserSummary(user));
   }

@@ -2,17 +2,24 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Query,
+  Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
+import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/pagination';
 import { SendFriendRequestDto } from '../application/dto/send-friend-request.dto';
+import { ListFriendsUseCase } from '../application/list-friends.use-case';
 import { RespondFriendRequestUseCase } from '../application/respond-friend-request.use-case';
 import { CancelFriendRequestUseCase } from '../application/cancel-friend-request.use-case';
 import { RemoveFriendUseCase } from '../application/remove-friend.use-case';
@@ -28,7 +35,33 @@ export class FriendsController {
     private readonly respondRequest: RespondFriendRequestUseCase,
     private readonly removeFriend: RemoveFriendUseCase,
     private readonly cancelRequest: CancelFriendRequestUseCase,
+    private readonly listFriends: ListFriendsUseCase,
   ) {}
+
+  @ApiOperation({ summary: 'Список друзей' })
+  @Get()
+  async list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() page: PaginationQueryDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const items = await this.listFriends.friends(user.userId, page);
+    setPaginationLinks(req, res, page, items.length);
+    return items;
+  }
+
+  @ApiOperation({ summary: 'Входящие заявки, ожидающие ответа' })
+  @Get('requests/incoming')
+  incoming(@CurrentUser() user: AuthenticatedUser) {
+    return this.listFriends.incoming(user.userId);
+  }
+
+  @ApiOperation({ summary: 'Отправленные заявки, ожидающие ответа' })
+  @Get('requests/outgoing')
+  outgoing(@CurrentUser() user: AuthenticatedUser) {
+    return this.listFriends.outgoing(user.userId);
+  }
 
   @ApiOperation({ summary: 'Отправить заявку в друзья по логину' })
   @Post('requests')
