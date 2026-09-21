@@ -20,7 +20,7 @@ import { AvatarUseCase } from '../application/avatar.use-case';
 export class AvatarsController {
   constructor(private readonly avatar: AvatarUseCase) {}
 
-  @ApiOperation({ summary: 'Файл аватарки; путь совпадает с ключом объекта в хранилище' })
+  @ApiOperation({ summary: 'Файл аватарки' })
   @ApiParam({ name: 'userId', format: 'uuid' })
   @ApiParam({ name: 'fileId', format: 'uuid' })
   @ApiOkResponse({ description: 'Картинка; заголовки Cache-Control и ETag, на If-None-Match — 304' })
