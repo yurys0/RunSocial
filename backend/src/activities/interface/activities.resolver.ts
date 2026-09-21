@@ -35,7 +35,7 @@ export class ActivitiesResolver {
     });
   }
 
-  @Query(() => ActivityType)
+  @Query(() => ActivityType, { description: 'Одна пробежка; закрытый чужой профиль даёт «не найдена»' })
   activity(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
     return this.getActivity.execute(id, user.userId);
   }

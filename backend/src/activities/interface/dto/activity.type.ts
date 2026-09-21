@@ -1,70 +1,71 @@
 import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
 
-@ObjectType('RoutePoint')
+@ObjectType('RoutePoint', { description: 'Точка GPS-трека пробежки' })
 export class RoutePointType {
-  @Field(() => Float)
+  @Field(() => Float, { description: 'Широта в градусах' })
   lat: number;
 
-  @Field(() => Float)
+  @Field(() => Float, { description: 'Долгота в градусах' })
   lng: number;
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => Float, { nullable: true, description: 'Высота над уровнем моря в метрах; null, если трекер её не отдал' })
   altitudeMeters: number | null;
 
-  /** Секунды от начала пробежки, не абсолютное время */
-  @Field(() => Int)
+  @Field(() => Int, { description: 'Секунды от начала пробежки, не абсолютное время' })
   timestampOffsetSec: number;
 }
 
-@ObjectType('ActivityAuthor')
+@ObjectType('ActivityAuthor', { description: 'Автор пробежки в ленте' })
 export class ActivityAuthorType {
-  @Field(() => ID)
+  @Field(() => ID, { description: 'Идентификатор пользователя' })
   id: string;
 
-  @Field()
+  @Field({ description: 'Логин' })
   login: string;
 
-  @Field()
+  @Field({ description: 'Отображаемое имя' })
   displayName: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String, { nullable: true, description: 'Ссылка на аватарку; null, если не загружена' })
   avatarUrl?: string | null;
 }
 
-@ObjectType('Activity')
+@ObjectType('Activity', { description: 'Пробежка, импортированная из трекера' })
 export class ActivityType {
-  @Field(() => ID)
+  @Field(() => ID, { description: 'Идентификатор пробежки' })
   id: string;
 
-  @Field(() => ID)
+  @Field(() => ID, { description: 'Идентификатор владельца' })
   userId: string;
 
-  @Field(() => Int)
+  @Field(() => Int, { description: 'Дистанция в метрах' })
   distanceMeters: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { description: 'Время движения в секундах, без пауз' })
   durationSeconds: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { description: 'Средний темп: секунд на километр' })
   avgPaceSecPerKm: number;
 
-  @Field()
+  @Field({ description: 'Начало пробежки' })
   startedAt: Date;
 
-  @Field(() => Date, { nullable: true })
+  @Field(() => Date, { nullable: true, description: 'Фактическое окончание по данным трекера; null, если трекер не сообщил' })
   endedAt?: Date | null;
 
-  @Field(() => Int)
+  @Field(() => Int, { description: 'Число лайков' })
   likeCount: number;
 
-  @Field()
+  @Field({ description: 'Лайкнул ли текущий пользователь' })
   likedByMe: boolean;
 
-  @Field(() => ActivityAuthorType)
+  @Field(() => ActivityAuthorType, { description: 'Автор пробежки' })
   author: ActivityAuthorType;
 
-  /** Читается из БД только при явном запросе поля — в списках не поднимается. */
-  @Field(() => [RoutePointType], { nullable: true })
+  @Field(() => [RoutePointType], {
+    nullable: true,
+    description: 'Маршрут; читается из БД только при явном запросе поля. null, если трекер не отдал трек',
+  })
   routePoints?: RoutePointType[] | null;
 }
 
