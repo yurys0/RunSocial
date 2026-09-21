@@ -3,7 +3,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { FriendLinkStatus } from '@prisma/client';
 
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
-import { S3Service } from '../../shared/storage/s3.service';
 import { FRIEND_LINK_REPOSITORY, FriendLinkRepository } from '../domain/friend-link.repository';
 import { Friendship, FriendshipStatus } from '../domain/friendship-status';
 import { toUserSummary, UserSummary } from './user-summary';
@@ -17,7 +16,6 @@ export class SearchUsersUseCase {
   constructor(
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(FRIEND_LINK_REPOSITORY) private readonly friendLinks: FriendLinkRepository,
-    private readonly s3: S3Service,
   ) {}
 
   /** Пустой запрос — все пользователи (раздел «Люди»), непустой — поиск по логину и имени. */
@@ -34,7 +32,7 @@ export class SearchUsersUseCase {
     );
 
     return found.map((user) => ({
-      ...toUserSummary(user, this.s3),
+      ...toUserSummary(user),
       friendship: this.toFriendship(viewerId, linkByUserId.get(user.id)),
     }));
   }

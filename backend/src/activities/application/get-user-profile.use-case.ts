@@ -2,11 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { CanViewProfileUseCase } from '../../social/application/can-view-profile.use-case';
 import { CACHE_KEYS, PROFILE_TTL_SECONDS } from '../../dashboard/application/cache-keys';
+import { avatarUrl } from '../../identity/application/avatar-url';
 import { UserNotFoundError } from '../../identity/domain/identity.errors';
 import { CacheService } from '../../shared/cache/cache.service';
 import { User } from '../../identity/domain/user.entity';
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
-import { S3Service } from '../../shared/storage/s3.service';
 import { ACTIVITY_REPOSITORY, ActivityRepository } from '../domain/activity.repository';
 import { ActivityView } from './activity-view';
 import { GetUserActivitiesUseCase } from './get-user-activities.use-case';
@@ -29,7 +29,6 @@ export class GetUserProfileUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(ACTIVITY_REPOSITORY) private readonly activities: ActivityRepository,
     private readonly userActivities: GetUserActivitiesUseCase,
-    private readonly s3: S3Service,
     private readonly cache: CacheService,
     private readonly canViewProfile: CanViewProfileUseCase,
   ) {}
@@ -63,7 +62,7 @@ export class GetUserProfileUseCase {
         id: user.id,
         login: user.login,
         displayName: user.displayName,
-        avatarUrl: user.avatarKey ? this.s3.publicUrl(user.avatarKey) : null,
+        avatarUrl: avatarUrl(user.avatarKey),
         createdAt: user.createdAt,
         isPrivate: user.isPrivate,
         stats: await this.activities.getUserStats(user.id),

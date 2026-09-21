@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { S3Service } from '../../shared/storage/s3.service';
 import { LoginAlreadyTakenError } from '../domain/identity.errors';
 import { USER_REPOSITORY, UserRepository } from '../domain/user.repository';
 import { RegisterUserDto } from './dto/auth.dto';
@@ -16,7 +15,6 @@ export class RegisterUserUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     private readonly hasher: PasswordHasher,
     private readonly jwt: JwtService,
-    private readonly s3: S3Service,
   ) {}
 
   async execute(dto: RegisterUserDto): Promise<AuthResult> {
@@ -32,6 +30,6 @@ export class RegisterUserUseCase {
 
     // Токен выдаём сразу — иначе фронт вынужден дёргать логин вторым запросом
     const accessToken = await this.jwt.signAsync({ userId: user.id, login: user.login });
-    return { accessToken, user: toUserView(user, this.s3) };
+    return { accessToken, user: toUserView(user) };
   }
 }

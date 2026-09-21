@@ -1,12 +1,7 @@
 import { ChangeEvent, useRef, useState } from 'react';
 
 import { useAuth } from '../../app/auth-context';
-import {
-  confirmAvatar,
-  createAvatarUploadUrl,
-  deleteAvatar,
-  updateDisplayName,
-} from '../../entities/user/api';
+import { deleteAvatar, updateDisplayName, uploadAvatar } from '../../entities/user/api';
 import { Avatar, ErrorMessage } from '../../shared/ui';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -51,7 +46,7 @@ export function ProfileHeader({
     }
   };
 
-  const uploadAvatar = async (event: ChangeEvent<HTMLInputElement>) => {
+  const onFileChosen = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
@@ -64,18 +59,7 @@ export function ProfileHeader({
       return;
     }
 
-    await run(async () => {
-      const { uploadUrl, key } = await createAvatarUploadUrl(file.type, file.size);
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      });
-      if (!response.ok) {
-        throw new Error(`Хранилище отклонило файл (${response.status})`);
-      }
-      await confirmAvatar(key);
-    });
+    await run(() => uploadAvatar(file));
   };
 
   const saveName = async () => {
@@ -118,7 +102,7 @@ export function ProfileHeader({
               ref={fileInput}
               type="file"
               accept={ALLOWED_TYPES.join(',')}
-              onChange={uploadAvatar}
+              onChange={onFileChosen}
               style={{ display: 'none' }}
             />
             {avatarUrl && (

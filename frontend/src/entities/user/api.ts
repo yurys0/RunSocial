@@ -56,20 +56,10 @@ export function updateDisplayName(displayName: string) {
   return rest('/users/me', { method: 'PATCH', body: { displayName } });
 }
 
-/** Шаг 1: ссылка для прямой отправки файла в хранилище. Размер входит в подпись. */
-export function createAvatarUploadUrl(
-  contentType: string,
-  contentLength: number,
-): Promise<{ uploadUrl: string; key: string }> {
-  return rest('/users/me/avatar/upload-url', {
-    method: 'POST',
-    body: { contentType, contentLength },
-  });
-}
-
-/** Шаг 2: подтверждение ключа — после него аватарка появляется в профиле. */
-export function confirmAvatar(key: string) {
-  return rest('/users/me/avatar', { method: 'PUT', body: { key } });
+export function uploadAvatar(file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  return rest('/users/me/avatar', { method: 'POST', body: form });
 }
 
 export function updatePrivacy(isPrivate: boolean) {

@@ -7,7 +7,6 @@ import {
   ProfileUpdatedEvent,
   ProfileVisibilityChangedEvent,
 } from '../../shared/events/domain-events';
-import { S3Service } from '../../shared/storage/s3.service';
 import { UserNotFoundError } from '../domain/identity.errors';
 import { USER_REPOSITORY, UserRepository } from '../domain/user.repository';
 import { UpdateProfileDto } from './dto/profile.dto';
@@ -17,7 +16,6 @@ import { toUserView, UserView } from './user-view';
 export class UpdateProfileUseCase {
   constructor(
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
-    private readonly s3: S3Service,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -30,7 +28,7 @@ export class UpdateProfileUseCase {
     user.rename(dto.displayName);
     const saved = await this.users.save(user);
     this.events.emit(PROFILE_UPDATED_EVENT, new ProfileUpdatedEvent(userId));
-    return toUserView(saved, this.s3);
+    return toUserView(saved);
   }
 
   async setPrivacy(userId: string, isPrivate: boolean): Promise<UserView> {
@@ -46,6 +44,6 @@ export class UpdateProfileUseCase {
       PROFILE_VISIBILITY_CHANGED_EVENT,
       new ProfileVisibilityChangedEvent(userId),
     );
-    return toUserView(saved, this.s3);
+    return toUserView(saved);
   }
 }

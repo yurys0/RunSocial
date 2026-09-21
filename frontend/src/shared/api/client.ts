@@ -22,18 +22,23 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-/** REST — мутации. */
+export function apiUrl(path: string): string {
+  return `${API_URL}${path}`;
+}
+
+/** REST — мутации. FormData без Content-Type: границу multipart ставит браузер. */
 export async function rest<T>(
   path: string,
   options: { method?: string; body?: unknown } = {},
 ): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const isForm = options.body instanceof FormData;
+  const response = await fetch(apiUrl(path), {
     method: options.method ?? 'GET',
     headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body && !isForm ? { 'Content-Type': 'application/json' } : {}),
       ...authHeaders(),
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: isForm ? (options.body as FormData) : options.body ? JSON.stringify(options.body) : undefined,
   });
 
   if (response.status === 204) {

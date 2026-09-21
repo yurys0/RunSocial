@@ -1,5 +1,5 @@
+import { avatarUrl } from '../../identity/application/avatar-url';
 import { User } from '../../identity/domain/user.entity';
-import { S3Service } from '../../shared/storage/s3.service';
 
 export type UserSummary = {
   id: string;
@@ -8,11 +8,11 @@ export type UserSummary = {
   avatarUrl: string | null;
 };
 
-export function toUserSummary(user: User, s3: S3Service): UserSummary {
+export function toUserSummary(user: User): UserSummary {
   return {
     id: user.id,
     login: user.login,
     displayName: user.displayName,
-    avatarUrl: user.avatarKey ? s3.publicUrl(user.avatarKey) : null,
+    avatarUrl: avatarUrl(user.avatarKey),
   };
 }
