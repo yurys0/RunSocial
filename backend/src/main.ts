@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Request } from 'express';
 
 import { AppModule } from './app.module';
 import { ElapsedTimeInterceptor } from './shared/elapsed-time.interceptor';
@@ -22,11 +23,16 @@ async function bootstrap() {
 
   const openApi = new DocumentBuilder()
     .setTitle('RunSocial API')
-    .setDescription('REST-часть API: мутации, привязка трекеров и SSE-потоки. Чтение — через GraphQL /graphql')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, openApi));
+  SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, openApi), {
+    // за nginx API живёт под /api, иначе «Try it out» шлёт запросы мимо префикса
+    patchDocumentOnRequest: (req, _res, document) => ({
+      ...document,
+      servers: [{ url: (req as Request).get('x-forwarded-prefix') ?? '/' }],
+    }),
+  });
 
   const port = Number(process.env.API_PORT ?? 3000);
   await app.listen(port);
