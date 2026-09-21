@@ -27,7 +27,7 @@ export class AuthController {
 
   // Защита от перебора паролей
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Регистрация: возвращает JWT на 24 часа' })
+  @ApiOperation({ summary: 'Регистрация' })
   @ApiCreatedResponse({ description: 'Пользователь создан, токен выдан', type: AuthResponseDto })
   @ApiBadRequestResponse({ description: 'Ошибка валидации полей', type: ErrorResponseDto })
   @ApiConflictResponse({ description: 'Логин уже занят', type: ErrorResponseDto })
