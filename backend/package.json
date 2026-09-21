@@ -2,6 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "private": true,
+  "author": "Юрий Снигур (https://github.com/yurys0)",
   "scripts": {
     "build": "nest build",
     "start": "node dist/main.js",
