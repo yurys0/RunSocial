@@ -4,13 +4,8 @@ import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repo
 import { Pagination } from '../../shared/pagination/pagination';
 import { FriendLink } from '../domain/friend-link.entity';
 import { FRIEND_LINK_REPOSITORY, FriendLinkRepository } from '../domain/friend-link.repository';
+import { FriendRequestView } from './friend-request-view';
 import { toUserSummary, UserSummary } from './user-summary';
-
-export type FriendRequestView = {
-  id: string;
-  user: UserSummary;
-  createdAt: Date;
-};
 
 @Injectable()
 export class ListFriendsUseCase {

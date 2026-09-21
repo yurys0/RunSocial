@@ -17,3 +17,8 @@ export class ConnectTrackerDto {
   @MinLength(1)
   password: string;
 }
+
+export class SyncAcceptedResponseDto {
+  @ApiProperty({ description: 'Идентификатор задачи в очереди; ход выполнения приходит в SSE /trackers/sync/events' })
+  jobId: string;
+}
