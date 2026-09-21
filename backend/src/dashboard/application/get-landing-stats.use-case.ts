@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { avatarUrl } from '../../identity/application/avatar-url';
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
 import { CacheService } from '../../shared/cache/cache.service';
-import { S3Service } from '../../shared/storage/s3.service';
 import {
   DASHBOARD_REPOSITORY,
   DashboardRepository,
@@ -20,7 +20,6 @@ export class GetLandingStatsUseCase {
     @Inject(DASHBOARD_REPOSITORY) private readonly dashboard: DashboardRepository,
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     private readonly cache: CacheService,
-    private readonly s3: S3Service,
   ) {}
 
   async execute(period: StatsPeriod): Promise<LandingStats> {
@@ -49,7 +48,7 @@ export class GetLandingStatsUseCase {
                 userId: row.userId,
                 login: user.login,
                 displayName: user.displayName,
-                avatarUrl: user.avatarKey ? this.s3.publicUrl(user.avatarKey) : null,
+                avatarUrl: avatarUrl(user.avatarKey),
                 totalDistanceMeters: row.totalDistanceMeters,
                 activityCount: row.activityCount,
               },

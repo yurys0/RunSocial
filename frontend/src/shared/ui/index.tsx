@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 
+import { apiUrl } from '../api/client';
+
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`card ${className}`}>{children}</div>;
 }
@@ -49,7 +51,7 @@ export function Avatar({
 }) {
   const className = `avatar${large ? ' avatar-lg' : ''}`;
   return url ? (
-    <img src={url} alt={name} className={className} />
+    <img src={apiUrl(url)} alt={name} className={className} />
   ) : (
     <span className={className}>{name.charAt(0).toUpperCase()}</span>
   );

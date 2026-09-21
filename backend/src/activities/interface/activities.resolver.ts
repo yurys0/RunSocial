@@ -6,8 +6,8 @@ import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
 import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
 import { ActivityNotFoundError } from '../domain/activities.errors';
 import { GetActivityUseCase } from '../application/get-activity.use-case';
+import { avatarUrl } from '../../identity/application/avatar-url';
 import { USER_REPOSITORY, UserRepository } from '../../identity/domain/user.repository';
-import { S3Service } from '../../shared/storage/s3.service';
 import { GetFeedUseCase } from '../application/get-feed.use-case';
 import { ActivityAuthorType, ActivityType, RoutePointType } from './dto/activity.type';
 
@@ -20,7 +20,6 @@ export class ActivitiesResolver {
     private readonly getFeed: GetFeedUseCase,
     private readonly getActivity: GetActivityUseCase,
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
-    private readonly s3: S3Service,
   ) {}
 
   @Query(() => [ActivityType], { description: 'Лента: свои пробежки и пробежки друзей' })
@@ -57,7 +56,7 @@ export class ActivitiesResolver {
       id: user.id,
       login: user.login,
       displayName: user.displayName,
-      avatarUrl: user.avatarKey ? this.s3.publicUrl(user.avatarKey) : null,
+      avatarUrl: avatarUrl(user.avatarKey),
     };
   }
 }

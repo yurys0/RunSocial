@@ -10,12 +10,13 @@ import { UpdateProfileUseCase } from './application/update-profile.use-case';
 import { USER_REPOSITORY } from './domain/user.repository';
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository';
 import { AuthController } from './interface/auth.controller';
+import { AvatarsController } from './interface/avatars.controller';
 import { UsersController } from './interface/users.controller';
 
 @Module({
   // Лимиты нужны только на /auth/register и /auth/login, поэтому троттлер настроен здесь
   imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }])],
-  controllers: [AuthController, UsersController],
+  controllers: [AuthController, UsersController, AvatarsController],
   providers: [
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
     PasswordHasher,

@@ -1,9 +1,4 @@
-import {
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from '../../shared/errors/domain-error';
+import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors/domain-error';
 
 export class LoginAlreadyTakenError extends ConflictError {
   constructor(login: string) {
@@ -24,14 +19,8 @@ export class UserNotFoundError extends NotFoundError {
   }
 }
 
-export class ForeignAvatarKeyError extends ForbiddenError {
+export class AvatarNotFoundError extends NotFoundError {
   constructor() {
-    super('Ключ аватарки принадлежит другому пользователю');
-  }
-}
-
-export class AvatarObjectInvalidError extends ValidationError {
-  constructor(reason: string) {
-    super(`Аватарка не принята: ${reason}`);
+    super('Аватарка не найдена');
   }
 }
