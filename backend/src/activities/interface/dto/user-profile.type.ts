@@ -43,6 +43,7 @@ export class UserProfileType {
 
   @Field(() => [ActivityType], {
     description: 'Последние пробежки, число задаётся аргументом activitiesLimit',
+    complexity: ({ childComplexity }) => childComplexity * 20,
   })
   activities: ActivityType[];
 

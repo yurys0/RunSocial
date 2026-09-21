@@ -44,11 +44,13 @@ export class LandingStatsType {
 
   @Field(() => [TopRunnerType], {
     description: 'Топ-10 по дистанции',
+    complexity: ({ childComplexity }) => childComplexity * 10,
   })
   topByDistance: TopRunnerType[];
 
   @Field(() => [TopRunnerType], {
     description: 'Топ-10 по числу пробежек',
+    complexity: ({ childComplexity }) => childComplexity * 10,
   })
   topByActivityCount: TopRunnerType[];
 }

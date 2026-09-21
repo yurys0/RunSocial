@@ -17,6 +17,9 @@ import {
   UserSummaryType,
 } from './dto/social.type';
 
+// для списков без аргумента limit
+const LIST_ESTIMATE = 20;
+
 @Resolver()
 @UseGuards(GqlAuthGuard)
 export class SocialResolver {
@@ -33,6 +36,7 @@ export class SocialResolver {
   @Query(() => [UserSearchResultType], {
     name: 'searchUsers',
     description: 'Пользователи: без query — все, с query — поиск по логину или имени',
+    complexity: ({ args, childComplexity }) => childComplexity * (args.limit as number),
   })
   search(
     @CurrentUser() user: AuthenticatedUser,
@@ -42,17 +46,26 @@ export class SocialResolver {
     return this.searchUsers.execute(query, user.userId, limit);
   }
 
-  @Query(() => [UserSummaryType], { description: 'Список друзей' })
+  @Query(() => [UserSummaryType], {
+    description: 'Список друзей',
+    complexity: ({ childComplexity }) => childComplexity * LIST_ESTIMATE,
+  })
   friends(@CurrentUser() user: AuthenticatedUser) {
     return this.listFriends.friends(user.userId);
   }
 
-  @Query(() => [FriendRequestType], { description: 'Входящие заявки в друзья' })
+  @Query(() => [FriendRequestType], {
+    description: 'Входящие заявки в друзья',
+    complexity: ({ childComplexity }) => childComplexity * LIST_ESTIMATE,
+  })
   incomingFriendRequests(@CurrentUser() user: AuthenticatedUser) {
     return this.listFriends.incoming(user.userId);
   }
 
-  @Query(() => [FriendRequestType], { description: 'Отправленные заявки, ожидающие ответа' })
+  @Query(() => [FriendRequestType], {
+    description: 'Отправленные заявки, ожидающие ответа',
+    complexity: ({ childComplexity }) => childComplexity * LIST_ESTIMATE,
+  })
   outgoingFriendRequests(@CurrentUser() user: AuthenticatedUser) {
     return this.listFriends.outgoing(user.userId);
   }

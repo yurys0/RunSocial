@@ -65,6 +65,7 @@ export class ActivityType {
   @Field(() => [RoutePointType], {
     nullable: true,
     description: 'Маршрут; читается из БД только при явном запросе поля. null, если трекер не отдал трек',
+    complexity: 50,
   })
   routePoints?: RoutePointType[] | null;
 }

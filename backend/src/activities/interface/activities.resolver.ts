@@ -23,7 +23,10 @@ export class ActivitiesResolver {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
-  @Query(() => [ActivityType], { description: 'Лента: свои пробежки и пробежки друзей' })
+  @Query(() => [ActivityType], {
+    description: 'Лента: свои пробежки и пробежки друзей',
+    complexity: ({ args, childComplexity }) => childComplexity * (args.limit as number),
+  })
   feed(
     @CurrentUser() user: AuthenticatedUser,
     @Args('limit', { type: () => Int, defaultValue: 20 }) limit: number,
