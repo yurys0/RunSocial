@@ -78,4 +78,5 @@ jobs:
             export FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:$TAG
             docker compose pull backend-api frontend
             docker compose up -d
+            docker image prune -af
           EOF
