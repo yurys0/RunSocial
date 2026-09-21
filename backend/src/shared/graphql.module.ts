@@ -3,6 +3,8 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { join } from 'node:path';
 
+import { QueryComplexityPlugin } from './graphql/query-complexity.plugin';
+
 /** Code-first: схема генерируется из декораторов. Нужен только API-процессу. */
 @Module({
   imports: [
@@ -14,5 +16,6 @@ import { join } from 'node:path';
       context: ({ req }: { req: unknown }) => ({ req }),
     }),
   ],
+  providers: [QueryComplexityPlugin],
 })
 export class GraphqlModule {}
