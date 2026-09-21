@@ -1,0 +1,86 @@
+// ER-диаграмма схемы БД. Рендер: dot -Tpng backend/prisma/er-diagram.dot -o er-diagram.png
+digraph RunSocial {
+  graph [rankdir=LR, splines=spline, nodesep=0.6, ranksep=1.1, fontname="Helvetica", bgcolor="white", pad=0.3];
+  node  [shape=plain, fontname="Helvetica", fontsize=11];
+  edge  [fontname="Helvetica", fontsize=9, color="#555555", arrowsize=0.9];
+
+  User [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+      <tr><td bgcolor="#2f6fdd" colspan="2"><font color="white"><b>User</b></font></td></tr>
+      <tr><td port="id" align="left"><b>id</b></td><td align="left">uuid PK</td></tr>
+      <tr><td align="left">login</td><td align="left">text UNIQUE</td></tr>
+      <tr><td align="left">passwordHash</td><td align="left">text</td></tr>
+      <tr><td align="left">displayName</td><td align="left">text</td></tr>
+      <tr><td align="left">avatarUrl</td><td align="left">text NULL</td></tr>
+      <tr><td align="left">isPrivate</td><td align="left">bool = false</td></tr>
+      <tr><td align="left">createdAt</td><td align="left">timestamp</td></tr>
+      <tr><td align="left">updatedAt</td><td align="left">timestamp</td></tr>
+    </table>>];
+
+  TrackerAccount [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+      <tr><td bgcolor="#2f6fdd" colspan="2"><font color="white"><b>TrackerAccount</b></font></td></tr>
+      <tr><td port="id" align="left"><b>id</b></td><td align="left">uuid PK</td></tr>
+      <tr><td port="userId" align="left">userId</td><td align="left">uuid FK → User</td></tr>
+      <tr><td align="left">provider</td><td align="left">enum STRAVA | ADIDAS | PACER</td></tr>
+      <tr><td align="left">encryptedCredentials</td><td align="left">text (AES-256-GCM)</td></tr>
+      <tr><td align="left">externalUserId</td><td align="left">text NULL</td></tr>
+      <tr><td align="left">status</td><td align="left">enum ACTIVE | ERROR | DISCONNECTED</td></tr>
+      <tr><td align="left">lastSyncAt</td><td align="left">timestamp NULL</td></tr>
+      <tr><td align="left">createdAt</td><td align="left">timestamp</td></tr>
+      <tr><td colspan="2" align="left"><i>UNIQUE (userId, provider)</i></td></tr>
+    </table>>];
+
+  Activity [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+      <tr><td bgcolor="#2f6fdd" colspan="2"><font color="white"><b>Activity</b></font></td></tr>
+      <tr><td port="id" align="left"><b>id</b></td><td align="left">uuid PK</td></tr>
+      <tr><td port="userId" align="left">userId</td><td align="left">uuid FK → User</td></tr>
+      <tr><td port="trackerAccountId" align="left">trackerAccountId</td><td align="left">uuid FK → TrackerAccount</td></tr>
+      <tr><td align="left">externalId</td><td align="left">text</td></tr>
+      <tr><td align="left">distanceMeters</td><td align="left">int</td></tr>
+      <tr><td align="left">durationSeconds</td><td align="left">int</td></tr>
+      <tr><td align="left">avgPaceSecPerKm</td><td align="left">int</td></tr>
+      <tr><td align="left">startedAt</td><td align="left">timestamp</td></tr>
+      <tr><td align="left">endedAt</td><td align="left">timestamp NULL</td></tr>
+      <tr><td align="left">routePoints</td><td align="left">jsonb NULL</td></tr>
+      <tr><td align="left">rawPayload</td><td align="left">jsonb</td></tr>
+      <tr><td align="left">createdAt</td><td align="left">timestamp</td></tr>
+      <tr><td colspan="2" align="left"><i>UNIQUE (trackerAccountId, externalId)</i></td></tr>
+      <tr><td colspan="2" align="left"><i>INDEX (userId, startedAt DESC), (startedAt DESC)</i></td></tr>
+    </table>>];
+
+  FriendLink [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+      <tr><td bgcolor="#2f6fdd" colspan="2"><font color="white"><b>FriendLink</b></font></td></tr>
+      <tr><td port="id" align="left"><b>id</b></td><td align="left">uuid PK</td></tr>
+      <tr><td port="fromUserId" align="left">fromUserId</td><td align="left">uuid FK → User</td></tr>
+      <tr><td port="toUserId" align="left">toUserId</td><td align="left">uuid FK → User</td></tr>
+      <tr><td align="left">status</td><td align="left">enum PENDING | ACCEPTED | DECLINED</td></tr>
+      <tr><td align="left">createdAt</td><td align="left">timestamp</td></tr>
+      <tr><td align="left">updatedAt</td><td align="left">timestamp</td></tr>
+      <tr><td colspan="2" align="left"><i>UNIQUE (fromUserId, toUserId)</i></td></tr>
+      <tr><td colspan="2" align="left"><i>INDEX (toUserId, status)</i></td></tr>
+    </table>>];
+
+  ActivityLike [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+      <tr><td bgcolor="#2f6fdd" colspan="2"><font color="white"><b>ActivityLike</b></font></td></tr>
+      <tr><td port="id" align="left"><b>id</b></td><td align="left">uuid PK</td></tr>
+      <tr><td port="userId" align="left">userId</td><td align="left">uuid FK → User</td></tr>
+      <tr><td port="activityId" align="left">activityId</td><td align="left">uuid FK → Activity</td></tr>
+      <tr><td align="left">createdAt</td><td align="left">timestamp</td></tr>
+      <tr><td colspan="2" align="left"><i>UNIQUE (userId, activityId)</i></td></tr>
+      <tr><td colspan="2" align="left"><i>INDEX (activityId)</i></td></tr>
+    </table>>];
+
+  // все FK — ON DELETE CASCADE
+  edge [dir=both, arrowtail=tee, arrowhead=crow];
+  User:id:e           -> TrackerAccount:userId:w   [label="1 : N"];
+  User:id:e           -> Activity:userId:w         [label="1 : N"];
+  TrackerAccount:id:e -> Activity:trackerAccountId:w [label="1 : N"];
+  User:id:e           -> FriendLink:fromUserId:w   [label="1 : N  (from)"];
+  User:id:e           -> FriendLink:toUserId:w     [label="1 : N  (to)"];
+  User:id:e           -> ActivityLike:userId:w     [label="1 : N"];
+  Activity:id:e       -> ActivityLike:activityId:w [label="1 : N"];
+}
