@@ -1,5 +1,3 @@
-/** Четыре иконки инлайном; цвет наследуется через currentColor. */
-
 const base = {
   width: 22,
   height: 22,

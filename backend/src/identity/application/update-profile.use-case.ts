@@ -25,25 +25,29 @@ export class UpdateProfileUseCase {
       throw new UserNotFoundError();
     }
 
-    user.rename(dto.displayName);
+    if (dto.displayName !== undefined) {
+      user.rename(dto.displayName);
+    }
+    if (dto.isPrivate !== undefined) {
+      user.setPrivate(dto.isPrivate);
+    }
+
     const saved = await this.users.save(user);
-    this.events.emit(PROFILE_UPDATED_EVENT, new ProfileUpdatedEvent(userId));
+
+    if (dto.displayName !== undefined) {
+      this.events.emit(PROFILE_UPDATED_EVENT, new ProfileUpdatedEvent(userId));
+    }
+    if (dto.isPrivate !== undefined) {
+      // Сбрасываем и профиль, и лендинг: состав публичной статистики изменился
+      this.events.emit(
+        PROFILE_VISIBILITY_CHANGED_EVENT,
+        new ProfileVisibilityChangedEvent(userId),
+      );
+    }
     return toUserView(saved);
   }
 
-  async setPrivacy(userId: string, isPrivate: boolean): Promise<UserView> {
-    const user = await this.users.findById(userId);
-    if (!user) {
-      throw new UserNotFoundError();
-    }
-
-    user.setPrivate(isPrivate);
-    const saved = await this.users.save(user);
-    // Сбрасываем и профиль, и лендинг: состав публичной статистики изменился
-    this.events.emit(
-      PROFILE_VISIBILITY_CHANGED_EVENT,
-      new ProfileVisibilityChangedEvent(userId),
-    );
-    return toUserView(saved);
+  setPrivacy(userId: string, isPrivate: boolean): Promise<UserView> {
+    return this.execute(userId, { isPrivate });
   }
 }

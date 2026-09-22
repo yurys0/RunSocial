@@ -59,11 +59,11 @@ export function updateDisplayName(displayName: string) {
 export function uploadAvatar(file: File) {
   const form = new FormData();
   form.append('file', file);
-  return rest('/users/me/avatar', { method: 'POST', body: form });
+  return rest('/users/me/avatar', { method: 'PUT', body: form });
 }
 
 export function updatePrivacy(isPrivate: boolean) {
-  return rest('/users/me/privacy', { method: 'PATCH', body: { isPrivate } });
+  return rest('/users/me', { method: 'PATCH', body: { isPrivate } });
 }
 
 export function deleteAvatar() {

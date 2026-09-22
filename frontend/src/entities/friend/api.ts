@@ -55,18 +55,17 @@ export function sendFriendRequest(login: string) {
 }
 
 export function acceptFriendRequest(id: string) {
-  return rest(`/friends/requests/${id}/accept`, { method: 'POST' });
+  return rest(`/friends/requests/${id}`, { method: 'PATCH', body: { status: 'ACCEPTED' } });
 }
 
 export function declineFriendRequest(id: string) {
-  return rest(`/friends/requests/${id}/decline`, { method: 'POST' });
+  return rest(`/friends/requests/${id}`, { method: 'PATCH', body: { status: 'DECLINED' } });
 }
 
 export function cancelFriendRequest(id: string) {
   return rest<void>(`/friends/requests/${id}`, { method: 'DELETE' });
 }
 
-/** В пути id пользователя, а не заявки */
 export function removeFriend(userId: string) {
   return rest<void>(`/friends/${userId}`, { method: 'DELETE' });
 }

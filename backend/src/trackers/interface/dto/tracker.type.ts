@@ -35,7 +35,7 @@ export class TrackerAccountType {
 
 @ObjectType('SyncStarted', { description: 'Синхронизация поставлена в очередь' })
 export class SyncStartedType {
-  @Field({ description: 'Идентификатор задачи; прогресс приходит в SSE /trackers/sync/events' })
+  @Field({ description: 'Идентификатор задачи; прогресс приходит в SSE /trackers/syncs/events' })
   jobId: string;
 }
 

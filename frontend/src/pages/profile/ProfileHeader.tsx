@@ -7,7 +7,6 @@ import { Avatar, ErrorMessage } from '../../shared/ui';
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 5 * 1024 * 1024;
 
-/** Аватарка и имя редактируются прямо здесь; у чужого профиля — только просмотр. */
 export function ProfileHeader({
   displayName,
   login,

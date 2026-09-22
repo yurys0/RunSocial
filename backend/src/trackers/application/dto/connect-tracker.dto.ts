@@ -19,6 +19,6 @@ export class ConnectTrackerDto {
 }
 
 export class SyncAcceptedResponseDto {
-  @ApiProperty({ description: 'Идентификатор задачи в очереди; ход выполнения приходит в SSE /trackers/sync/events' })
+  @ApiProperty({ description: 'Идентификатор задачи в очереди; ход выполнения приходит в SSE /trackers/syncs/events' })
   jobId: string;
 }

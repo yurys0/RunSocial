@@ -109,7 +109,6 @@ export function ProfilePage() {
   );
 }
 
-/** Набор кнопок зависит от текущего отношения к владельцу профиля. */
 function FriendshipActions({
   login,
   userId,

@@ -1,18 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
-  @ApiProperty({ example: 'Иван Петров' })
+  @ApiPropertyOptional({ example: 'Иван Петров' })
+  @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  displayName: string;
-}
+  displayName?: string;
 
-export class UpdatePrivacyDto {
-  @ApiProperty({ description: 'Закрытый профиль: пробежки видны только друзьям' })
+  @ApiPropertyOptional({ description: 'Закрытый профиль: пробежки видны только друзьям' })
+  @IsOptional()
   @IsBoolean()
-  isPrivate: boolean;
+  isPrivate?: boolean;
 }
 
 export const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

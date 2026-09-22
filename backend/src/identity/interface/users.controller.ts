@@ -8,7 +8,7 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   Patch,
-  Post,
+  Put,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -19,7 +19,6 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
-  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -32,7 +31,6 @@ import { AvatarUseCase, UploadedImage } from '../application/avatar.use-case';
 import {
   ALLOWED_AVATAR_TYPES,
   MAX_AVATAR_BYTES,
-  UpdatePrivacyDto,
   UpdateProfileDto,
 } from '../application/dto/profile.dto';
 import { GetProfileUseCase } from '../application/get-profile.use-case';
@@ -70,20 +68,12 @@ export class UsersController {
     return this.getProfile.execute(user.userId);
   }
 
-  @ApiOperation({ summary: 'Изменить отображаемое имя' })
+  @ApiOperation({ summary: 'Изменить имя и приватность: любое подмножество полей' })
   @ApiOkResponse({ description: 'Обновлённый профиль', type: UserView })
   @ApiBadRequestResponse({ description: 'Ошибка валидации полей', type: ErrorResponseDto })
   @Patch('me')
   update(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto) {
     return this.updateProfile.execute(user.userId, dto);
-  }
-
-  @ApiOperation({ summary: 'Переключить приватность профиля' })
-  @ApiOkResponse({ description: 'Обновлённый профиль', type: UserView })
-  @ApiBadRequestResponse({ description: 'Ошибка валидации полей', type: ErrorResponseDto })
-  @Patch('me/privacy')
-  updatePrivacy(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdatePrivacyDto) {
-    return this.updateProfile.setPrivacy(user.userId, dto.isPrivate);
   }
 
   @ApiOperation({ summary: 'Загрузить аватарку: multipart, поле file' })
@@ -95,9 +85,9 @@ export class UsersController {
       properties: { file: { type: 'string', format: 'binary', description: 'JPEG, PNG или WebP до 5 МБ' } },
     },
   })
-  @ApiCreatedResponse({ description: 'Профиль с новой аватаркой', type: UserView })
+  @ApiOkResponse({ description: 'Профиль с новой аватаркой', type: UserView })
   @ApiBadRequestResponse({ description: 'Файла нет, не тот тип или больше 5 МБ', type: ErrorResponseDto })
-  @Post('me/avatar')
+  @Put('me/avatar')
   @UseInterceptors(FileInterceptor('file'))
   uploadAvatar(@CurrentUser() user: AuthenticatedUser, @UploadedFile(avatarFilePipe) file: UploadedImage) {
     return this.avatar.upload(user.userId, file);
