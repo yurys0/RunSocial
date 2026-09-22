@@ -84,8 +84,5 @@ function extractMessage(payload: unknown): string | null {
     return null;
   }
   const message = (payload as { message?: unknown }).message;
-  if (Array.isArray(message)) {
-    return message.join(', ');
-  }
   return typeof message === 'string' ? message : null;
 }

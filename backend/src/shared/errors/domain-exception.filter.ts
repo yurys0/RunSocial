@@ -45,7 +45,13 @@ export class DomainExceptionFilter implements ExceptionFilter {
 
     // Ошибки самого Nest (ValidationPipe, guard'ы) уже несут корректный статус
     if (exception instanceof HttpException) {
-      response.status(exception.getStatus()).json(exception.getResponse());
+      const status = exception.getStatus();
+      const messages = extractMessages(exception);
+      response.status(status).json({
+        statusCode: status,
+        message: messages.join('; '),
+        ...(messages.length > 1 ? { details: messages } : {}),
+      });
       return;
     }
 
@@ -65,11 +71,9 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return new GraphQLError(exception.message, { extensions: { code: status } });
     }
     if (exception instanceof HttpException) {
-      // у ValidationPipe сообщения по полям лежат в теле, а message — общий «Bad Request Exception»
-      const body = exception.getResponse();
-      const detail = typeof body === 'object' ? (body as { message?: string | string[] }).message : undefined;
-      const message = Array.isArray(detail) ? detail.join('; ') : (detail ?? exception.message);
-      return new GraphQLError(message, { extensions: { code: exception.getStatus() } });
+      return new GraphQLError(extractMessages(exception).join('; '), {
+        extensions: { code: exception.getStatus() },
+      });
     }
 
     this.logger.error(
@@ -87,4 +91,14 @@ export class DomainExceptionFilter implements ExceptionFilter {
       HttpStatus.BAD_REQUEST
     );
   }
+}
+
+/** У ValidationPipe сообщения по полям лежат в теле массивом, а message — общий «Bad Request Exception». */
+function extractMessages(exception: HttpException): string[] {
+  const body = exception.getResponse();
+  const message = typeof body === 'object' ? (body as { message?: string | string[] }).message : body;
+  if (Array.isArray(message)) {
+    return message;
+  }
+  return [typeof message === 'string' ? message : exception.message];
 }

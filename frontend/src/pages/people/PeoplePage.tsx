@@ -12,7 +12,6 @@ import {
 import { useQuery } from '../../shared/hooks/use-query';
 import { Avatar, Button, Card, ErrorMessage, Field, Spinner } from '../../shared/ui';
 
-/** Пустой запрос searchUsers отдаёт всех, непустой — сужает выдачу. */
 export function PeoplePage() {
   const [query, setQuery] = useState('');
   // Список перезагружается по кнопке, а не на каждую букву

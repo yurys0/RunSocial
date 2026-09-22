@@ -29,5 +29,5 @@ export function disconnectTracker(id: string) {
 }
 
 export function startSync(id: string): Promise<{ jobId: string }> {
-  return rest(`/trackers/${id}/sync`, { method: 'POST' });
+  return rest(`/trackers/${id}/syncs`, { method: 'POST' });
 }

@@ -1,20 +1,9 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -28,6 +17,7 @@ import { Request, Response } from 'express';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
+import { setLocation } from '../../shared/http/location';
 import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/pagination';
 import { ActivityView } from '../application/activity-view';
 import { LikeCountResponseDto } from '../application/dto/like-count.dto';
@@ -76,22 +66,31 @@ export class ActivitiesController {
 
   @ApiOperation({ summary: 'Поставить лайк чужой пробежке' })
   @ApiParam({ name: 'id', description: 'Идентификатор пробежки', format: 'uuid' })
-  @ApiOkResponse({ description: 'Лайк поставлен', type: LikeCountResponseDto })
+  @ApiCreatedResponse({
+    description: 'Лайк создан',
+    type: LikeCountResponseDto,
+    headers: { Location: { description: 'Адрес созданного лайка', schema: { type: 'string' } } },
+  })
   @ApiForbiddenResponse({ description: 'Нельзя лайкнуть свою пробежку', type: ErrorResponseDto })
   @ApiNotFoundResponse({ description: 'Пробежка не найдена или её профиль закрыт', type: ErrorResponseDto })
   @ApiConflictResponse({ description: 'Лайк уже стоит', type: ErrorResponseDto })
-  @Post(':id/like')
-  @HttpCode(HttpStatus.OK)
-  like(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.likeActivity.like(user.userId, id);
+  @Post(':id/likes')
+  async like(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.likeActivity.like(user.userId, id);
+    setLocation(req, res, `/activities/${id}/likes/me`);
+    return result;
   }
 
-  @ApiOperation({ summary: 'Снять лайк' })
+  @ApiOperation({ summary: 'Снять свой лайк' })
   @ApiParam({ name: 'id', description: 'Идентификатор пробежки', format: 'uuid' })
-  @ApiOkResponse({ description: 'Лайк снят', type: LikeCountResponseDto })
+  @ApiOkResponse({ description: 'Лайк снят, в ответе актуальный счётчик', type: LikeCountResponseDto })
   @ApiNotFoundResponse({ description: 'Лайка не было', type: ErrorResponseDto })
-  @Delete(':id/like')
-  @HttpCode(HttpStatus.OK)
+  @Delete(':id/likes/me')
   unlike(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.likeActivity.unlike(user.userId, id);
   }

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -30,7 +31,14 @@ import { Request, Response } from 'express';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
+import { setLocation } from '../../shared/http/location';
 import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/pagination';
+import {
+  FriendRequestDirection,
+  FriendRequestResolution,
+  FriendRequestsQueryDto,
+  RespondFriendRequestDto,
+} from '../application/dto/friend-requests.dto';
 import {
   FriendRequestResponseDto,
   SendFriendRequestDto,
@@ -75,22 +83,22 @@ export class FriendsController {
     return items;
   }
 
-  @ApiOperation({ summary: 'Входящие заявки, ожидающие ответа' })
+  @ApiOperation({ summary: 'Заявки, ожидающие ответа: входящие или исходящие' })
   @ApiOkResponse({ type: [FriendRequestView] })
-  @Get('requests/incoming')
-  incoming(@CurrentUser() user: AuthenticatedUser) {
-    return this.listFriends.incoming(user.userId);
-  }
-
-  @ApiOperation({ summary: 'Отправленные заявки, ожидающие ответа' })
-  @ApiOkResponse({ type: [FriendRequestView] })
-  @Get('requests/outgoing')
-  outgoing(@CurrentUser() user: AuthenticatedUser) {
-    return this.listFriends.outgoing(user.userId);
+  @ApiBadRequestResponse({ description: 'direction не передан или не incoming/outgoing', type: ErrorResponseDto })
+  @Get('requests')
+  requests(@CurrentUser() user: AuthenticatedUser, @Query() query: FriendRequestsQueryDto) {
+    return query.direction === FriendRequestDirection.INCOMING
+      ? this.listFriends.incoming(user.userId)
+      : this.listFriends.outgoing(user.userId);
   }
 
   @ApiOperation({ summary: 'Отправить заявку в друзья по логину' })
-  @ApiCreatedResponse({ description: 'Заявка создана и ждёт ответа', type: FriendRequestResponseDto })
+  @ApiCreatedResponse({
+    description: 'Заявка создана и ждёт ответа',
+    type: FriendRequestResponseDto,
+    headers: { Location: { description: 'Адрес созданной заявки', schema: { type: 'string' } } },
+  })
   @ApiBadRequestResponse({ description: 'Ошибка валидации или заявка самому себе', type: ErrorResponseDto })
   @ApiNotFoundResponse({ description: 'Пользователь с таким логином не найден', type: ErrorResponseDto })
   @ApiConflictResponse({
@@ -98,28 +106,31 @@ export class FriendsController {
     type: ErrorResponseDto,
   })
   @Post('requests')
-  send(@CurrentUser() user: AuthenticatedUser, @Body() dto: SendFriendRequestDto) {
-    return this.sendRequest.execute(user.userId, dto);
+  async send(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: SendFriendRequestDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const request = await this.sendRequest.execute(user.userId, dto);
+    setLocation(req, res, `/friends/requests/${request.id}`);
+    return request;
   }
 
-  @ApiOperation({ summary: 'Принять входящую заявку' })
+  @ApiOperation({ summary: 'Ответить на входящую заявку: принять или отклонить' })
   @ApiParam({ name: 'id', description: 'Идентификатор заявки', format: 'uuid' })
-  @ApiOkResponse({ description: 'Заявка принята, пользователи стали друзьями', type: FriendRequestResponseDto })
+  @ApiOkResponse({ description: 'Заявка в новом статусе', type: FriendRequestResponseDto })
+  @ApiBadRequestResponse({ description: 'status не ACCEPTED и не DECLINED', type: ErrorResponseDto })
   @ApiNotFoundResponse({ description: 'Входящая заявка не найдена', type: ErrorResponseDto })
-  @Post('requests/:id/accept')
-  @HttpCode(HttpStatus.OK)
-  accept(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.respondRequest.accept(user.userId, id);
-  }
-
-  @ApiOperation({ summary: 'Отклонить входящую заявку' })
-  @ApiParam({ name: 'id', description: 'Идентификатор заявки', format: 'uuid' })
-  @ApiOkResponse({ description: 'Заявка отклонена', type: FriendRequestResponseDto })
-  @ApiNotFoundResponse({ description: 'Входящая заявка не найдена', type: ErrorResponseDto })
-  @Post('requests/:id/decline')
-  @HttpCode(HttpStatus.OK)
-  decline(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.respondRequest.decline(user.userId, id);
+  @Patch('requests/:id')
+  respond(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: RespondFriendRequestDto,
+  ) {
+    return dto.status === FriendRequestResolution.ACCEPTED
+      ? this.respondRequest.accept(user.userId, id)
+      : this.respondRequest.decline(user.userId, id);
   }
 
   @ApiOperation({ summary: 'Отменить свою отправленную заявку' })
@@ -132,7 +143,6 @@ export class FriendsController {
     return this.cancelRequest.execute(user.userId, id);
   }
 
-  /** Удаление из друзей: в пути — id пользователя, а не связи */
   @ApiOperation({ summary: 'Удалить пользователя из друзей' })
   @ApiParam({ name: 'userId', description: 'Идентификатор пользователя, а не связи', format: 'uuid' })
   @ApiNoContentResponse({ description: 'Дружба удалена' })

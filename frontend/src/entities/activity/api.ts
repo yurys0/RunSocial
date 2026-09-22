@@ -40,9 +40,9 @@ export async function fetchActivity(id: string): Promise<Activity> {
 }
 
 export function likeActivity(id: string): Promise<{ likeCount: number }> {
-  return rest(`/activities/${id}/like`, { method: 'POST' });
+  return rest(`/activities/${id}/likes`, { method: 'POST' });
 }
 
 export function unlikeActivity(id: string): Promise<{ likeCount: number }> {
-  return rest(`/activities/${id}/like`, { method: 'DELETE' });
+  return rest(`/activities/${id}/likes/me`, { method: 'DELETE' });
 }

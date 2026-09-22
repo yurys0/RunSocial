@@ -25,7 +25,6 @@ export class AuthController {
     private readonly loginUser: LoginUserUseCase,
   ) {}
 
-  // Защита от перебора паролей
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Регистрация' })
   @ApiCreatedResponse({ description: 'Пользователь создан, токен выдан', type: AuthResponseDto })

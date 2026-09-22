@@ -23,7 +23,7 @@ import { SyncProgressEvent, syncProgressChannel } from '../infrastructure/sync-q
 @ApiTags('Трекеры')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
-@Controller('trackers/sync')
+@Controller('trackers/syncs')
 @UseGuards(JwtAuthGuard)
 export class SyncEventsController {
   constructor(private readonly redis: RedisService) {}

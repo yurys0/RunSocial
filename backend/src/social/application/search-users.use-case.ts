@@ -18,7 +18,6 @@ export class SearchUsersUseCase {
     @Inject(FRIEND_LINK_REPOSITORY) private readonly friendLinks: FriendLinkRepository,
   ) {}
 
-  /** Пустой запрос — все пользователи (раздел «Люди»), непустой — поиск по логину и имени. */
   async execute(query: string, viewerId: string, limit = MAX_RESULTS): Promise<UserSearchResult[]> {
     const found = await this.users.search(query.trim(), Math.min(limit, MAX_RESULTS), viewerId);
 

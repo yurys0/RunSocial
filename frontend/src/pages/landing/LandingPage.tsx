@@ -32,7 +32,7 @@ const PERIODS = [
 export function LandingPage() {
   const [period, setPeriod] = useState('MONTH');
   const { data, loading, error } = useQuery<LandingStats>(
-    () => rest(`/dashboard/landing?period=${period}`),
+    () => rest(`/stats?period=${period}`),
     [period],
   );
 

@@ -29,7 +29,7 @@ export function TrackerSection({ onImported }: { onImported: () => void }) {
   const [syncingId, setSyncingId] = useState<string | null>(null);
 
   // Прогресс приходит из процесса воркера через Redis pub/sub
-  useSse<SyncEvent>('/trackers/sync/events', (event) => {
+  useSse<SyncEvent>('/trackers/syncs/events', (event) => {
     setSync(event);
     if (event.stage === 'done' || event.stage === 'error') {
       setSyncingId(null);
