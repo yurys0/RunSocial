@@ -33,8 +33,8 @@ export class DomainExceptionFilter implements ExceptionFilter {
   private readonly superTokens = new SuperTokensExceptionFilter();
 
   catch(exception: unknown, host: ArgumentsHost) {
-    // Этот фильтр ловит всё, поэтому ошибки сессии отдаём SuperTokens сами: иначе
-    // вместо 401 и обновления куки клиент получал бы 500
+    // Фильтр ловит всё, поэтому ошибки сессии передаём в SuperTokens: он отвечает 401
+    // и обновляет куки
     if (SuperTokensError.isErrorFromSuperTokens(exception)) {
       if (host.getType<'graphql'>() === 'graphql') {
         return this.toSessionGraphQLError(exception);

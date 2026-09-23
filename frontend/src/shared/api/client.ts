@@ -23,7 +23,6 @@ export async function rest<T>(
   const response = await fetch(apiUrl(path), {
     method: options.method ?? 'GET',
     headers: options.body && !isForm ? { 'Content-Type': 'application/json' } : {},
-    // Сессия живёт в cookie, поэтому её нужно слать с каждым запросом
     credentials: 'include',
     body: isForm ? (options.body as FormData) : options.body ? JSON.stringify(options.body) : undefined,
   });

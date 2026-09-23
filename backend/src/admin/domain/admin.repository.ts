@@ -33,7 +33,6 @@ export type AdminUserDetailsRow = AdminUserRow & {
   activities: AdminActivityRow[];
 };
 
-/** Read-модель админки: считает всё одним запросом, минуя доменные репозитории. */
 export interface AdminRepository {
   listUsers(query: string, limit: number, offset: number): Promise<AdminUserRow[]>;
   findUser(id: string, activitiesLimit: number): Promise<AdminUserDetailsRow | null>;

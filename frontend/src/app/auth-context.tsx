@@ -92,7 +92,6 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" state={{ from: location.pathname }} replace />;
 }
 
-/** Ссылки на админку в интерфейсе нет: чужой пользователь уходит на главную. */
 export function AdminRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
 
