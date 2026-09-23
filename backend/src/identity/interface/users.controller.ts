@@ -5,7 +5,10 @@ import {
   Delete,
   FileTypeValidator,
   Get,
+  HttpCode,
+  HttpStatus,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Patch,
   Put,
@@ -16,28 +19,34 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiCookieAuth,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
+import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { AvatarUseCase, UploadedImage } from '../application/avatar.use-case';
+import { DeleteUserUseCase } from '../application/delete-user.use-case';
 import {
   ALLOWED_AVATAR_TYPES,
   MAX_AVATAR_BYTES,
-  UpdateProfileDto,
+  UpdateUserDto,
 } from '../application/dto/profile.dto';
 import { GetProfileUseCase } from '../application/get-profile.use-case';
-import { UpdateProfileUseCase } from '../application/update-profile.use-case';
+import { UpdateUserUseCase } from '../application/update-user.use-case';
 import { UserView } from '../application/user-view';
-import { CurrentUser } from '../../shared/auth/current-user.decorator';
-import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
+import { ForeignProfileError } from '../domain/identity.errors';
 
 // тип проверяется по сигнатуре файла, а не по заголовку из браузера
 const avatarFilePipe = new ParseFilePipe({
@@ -48,32 +57,49 @@ const avatarFilePipe = new ParseFilePipe({
   exceptionFactory: () => new BadRequestException('Подойдёт JPEG, PNG или WebP не больше 5 МБ'),
 });
 
-@ApiTags('Профиль')
-@ApiBearerAuth()
-@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
-@ApiNotFoundResponse({ description: 'Пользователь из токена не найден', type: ErrorResponseDto })
+const SELF = 'me';
+
+@ApiTags('Пользователи')
+@ApiCookieAuth()
+@ApiParam({ name: 'id', description: `Идентификатор пользователя или «${SELF}»`, example: SELF })
+@ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })
+@ApiForbiddenResponse({ description: 'Чужой профиль или не хватает прав', type: ErrorResponseDto })
+@ApiNotFoundResponse({ description: 'Пользователь не найден', type: ErrorResponseDto })
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SuperTokensAuthGuard)
 export class UsersController {
   constructor(
     private readonly getProfile: GetProfileUseCase,
-    private readonly updateProfile: UpdateProfileUseCase,
+    private readonly updateUser: UpdateUserUseCase,
+    private readonly deleteUser: DeleteUserUseCase,
     private readonly avatar: AvatarUseCase,
   ) {}
 
-  @ApiOperation({ summary: 'Свой профиль' })
+  @ApiOperation({ summary: 'Профиль пользователя: свой или, для администратора, любой' })
   @ApiOkResponse({ type: UserView })
-  @Get('me')
-  me(@CurrentUser() user: AuthenticatedUser) {
-    return this.getProfile.execute(user.userId);
+  @Get(':id')
+  one(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.getProfile.execute(user, resolveUserId(user, id));
   }
 
-  @ApiOperation({ summary: 'Изменить имя и приватность: любое подмножество полей' })
+  @ApiOperation({ summary: 'Изменить профиль: любое подмножество полей' })
   @ApiOkResponse({ description: 'Обновлённый профиль', type: UserView })
   @ApiBadRequestResponse({ description: 'Ошибка валидации полей', type: ErrorResponseDto })
-  @Patch('me')
-  update(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto) {
-    return this.updateProfile.execute(user.userId, dto);
+  @Patch(':id')
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+  ) {
+    return this.updateUser.execute(user, resolveUserId(user, id), dto);
+  }
+
+  @ApiOperation({ summary: 'Удалить пользователя вместе со всеми его данными' })
+  @ApiNoContentResponse({ description: 'Пользователь удалён' })
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.deleteUser.execute(user, resolveUserId(user, id));
   }
 
   @ApiOperation({ summary: 'Загрузить аватарку: multipart, поле file' })
@@ -87,16 +113,28 @@ export class UsersController {
   })
   @ApiOkResponse({ description: 'Профиль с новой аватаркой', type: UserView })
   @ApiBadRequestResponse({ description: 'Файла нет, не тот тип или больше 5 МБ', type: ErrorResponseDto })
-  @Put('me/avatar')
+  @Put(':id/avatar')
   @UseInterceptors(FileInterceptor('file'))
-  uploadAvatar(@CurrentUser() user: AuthenticatedUser, @UploadedFile(avatarFilePipe) file: UploadedImage) {
+  uploadAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @UploadedFile(avatarFilePipe) file: UploadedImage,
+  ) {
+    // Загружать картинку за другого нельзя даже администратору — он может только удалить
+    if (resolveUserId(user, id) !== user.userId) {
+      throw new ForeignProfileError();
+    }
     return this.avatar.upload(user.userId, file);
   }
 
   @ApiOperation({ summary: 'Удалить аватарку' })
   @ApiOkResponse({ description: 'Профиль без аватарки', type: UserView })
-  @Delete('me/avatar')
-  deleteAvatar(@CurrentUser() user: AuthenticatedUser) {
-    return this.avatar.remove(user.userId);
+  @Delete(':id/avatar')
+  deleteAvatar(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.avatar.remove(user, resolveUserId(user, id));
   }
+}
+
+function resolveUserId(user: AuthenticatedUser, id: string): string {
+  return id === SELF ? user.userId : id;
 }

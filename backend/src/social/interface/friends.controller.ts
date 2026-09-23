@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -27,12 +27,14 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
-import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { setLocation } from '../../shared/http/location';
 import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/pagination';
+import { CancelFriendRequestUseCase } from '../application/cancel-friend-request.use-case';
 import {
   FriendRequestDirection,
   FriendRequestResolution,
@@ -45,17 +47,16 @@ import {
 } from '../application/dto/send-friend-request.dto';
 import { FriendRequestView } from '../application/friend-request-view';
 import { ListFriendsUseCase } from '../application/list-friends.use-case';
-import { RespondFriendRequestUseCase } from '../application/respond-friend-request.use-case';
-import { CancelFriendRequestUseCase } from '../application/cancel-friend-request.use-case';
 import { RemoveFriendUseCase } from '../application/remove-friend.use-case';
+import { RespondFriendRequestUseCase } from '../application/respond-friend-request.use-case';
 import { SendFriendRequestUseCase } from '../application/send-friend-request.use-case';
 import { UserSummary } from '../application/user-summary';
 
 @ApiTags('Друзья')
-@ApiBearerAuth()
-@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
+@ApiCookieAuth()
+@ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })
 @Controller('friends')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SuperTokensAuthGuard)
 export class FriendsController {
   constructor(
     private readonly sendRequest: SendFriendRequestUseCase,

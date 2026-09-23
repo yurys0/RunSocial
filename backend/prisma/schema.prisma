@@ -27,16 +27,16 @@ enum FriendLinkStatus {
   DECLINED
 }
 
+/// id совпадает с идентификатором аккаунта в SuperTokens: пароль и роли хранятся там
 model User {
-  id           String   @id @default(uuid())
-  login        String   @unique
-  passwordHash String
-  displayName  String
-  avatarUrl    String?
+  id          String  @id
+  login       String  @unique
+  displayName String
+  avatarUrl   String?
   /// Закрытый профиль: пробежки видны только друзьям, в статистику лендинга не входит
-  isPrivate    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   trackerAccounts     TrackerAccount[]
   activities          Activity[]

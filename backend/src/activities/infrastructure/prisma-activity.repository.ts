@@ -67,6 +67,10 @@ export class PrismaActivityRepository implements ActivityRepository {
     return row ? this.toDomain(row) : null;
   }
 
+  async delete(id: string): Promise<void> {
+    await this.prisma.activity.delete({ where: { id } });
+  }
+
   /** routePoints исключён из select: иначе каждая строка ленты тянула бы полный трек. */
   async findFeed(userIds: string[], pagination: Pagination): Promise<Activity[]> {
     if (userIds.length === 0) {

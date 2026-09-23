@@ -75,7 +75,7 @@ export class PacerProvider implements TrackerProvider {
 
   async authenticate(credentials: TrackerCredentials): Promise<TrackerSession> {
     const path = '/api/v2.0/login';
-    // Pacer ожидает md5 от пароля (это его протокол; пароли наших пользователей — bcrypt)
+    // Pacer ожидает md5 от пароля — это его протокол
     const body = {
       email: credentials.login,
       password: createHash('md5').update(credentials.password, 'utf8').digest('hex'),

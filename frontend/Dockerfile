@@ -7,11 +7,12 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json frontend/
 RUN npm ci --workspace frontend --include-workspace-root
 COPY frontend frontend/
-# Vite читает VITE_* из .env-файлов, а не из окружения, поэтому build args пишем в .env.production
+# Vite читает VITE_* из .env-файлов, а не из окружения, поэтому build args пишем в .env.production.
+# Файл лежит в корне монорепо: там же, куда смотрит envDir из vite.config.ts
 ARG VITE_API_URL
 ARG VITE_YANDEX_MAPS_API_KEY
 RUN printf 'VITE_API_URL=%s\nVITE_YANDEX_MAPS_API_KEY=%s\n' \
-      "$VITE_API_URL" "$VITE_YANDEX_MAPS_API_KEY" > frontend/.env.production \
+      "$VITE_API_URL" "$VITE_YANDEX_MAPS_API_KEY" > .env.production \
     && npm run build --workspace frontend
 
 FROM nginx:alpine

@@ -1,13 +1,24 @@
 export class User {
   constructor(
     readonly id: string,
-    readonly login: string,
-    readonly passwordHash: string,
+    private _login: string,
     private _displayName: string,
     private _avatarKey: string | null,
     private _isPrivate: boolean,
     readonly createdAt: Date,
   ) {}
+
+  get login(): string {
+    return this._login;
+  }
+
+  changeLogin(login: string): void {
+    const trimmed = login.trim();
+    if (!trimmed) {
+      throw new Error('login не может быть пустым');
+    }
+    this._login = trimmed;
+  }
 
   get isPrivate(): boolean {
     return this._isPrivate;

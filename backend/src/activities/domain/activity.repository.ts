@@ -30,6 +30,7 @@ export interface ActivityRepository {
   upsertMany(activities: ImportActivityData[]): Promise<{ created: number; updated: number }>;
 
   findById(id: string): Promise<Activity | null>;
+  delete(id: string): Promise<void>;
 
   /** Списковые методы не читают routePoints — маршрут догружается через findRoutePoints. */
   findFeed(userIds: string[], pagination: Pagination): Promise<Activity[]>;

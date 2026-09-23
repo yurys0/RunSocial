@@ -1,10 +1,23 @@
-import { Controller, Delete, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -13,28 +26,31 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
-import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { setLocation } from '../../shared/http/location';
 import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/pagination';
 import { ActivityView } from '../application/activity-view';
+import { DeleteActivityUseCase } from '../application/delete-activity.use-case';
 import { LikeCountResponseDto } from '../application/dto/like-count.dto';
 import { GetActivityUseCase } from '../application/get-activity.use-case';
 import { GetFeedUseCase } from '../application/get-feed.use-case';
 import { LikeActivityUseCase } from '../application/like-activity.use-case';
 
 @ApiTags('Пробежки')
-@ApiBearerAuth()
-@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
+@ApiCookieAuth()
+@ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })
 @Controller('activities')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SuperTokensAuthGuard)
 export class ActivitiesController {
   constructor(
     private readonly getFeed: GetFeedUseCase,
     private readonly getActivity: GetActivityUseCase,
     private readonly likeActivity: LikeActivityUseCase,
+    private readonly deleteActivity: DeleteActivityUseCase,
   ) {}
 
   @ApiOperation({ summary: 'Лента: свои пробежки и пробежки друзей, новые первыми' })
@@ -62,6 +78,17 @@ export class ActivitiesController {
   @Get(':id')
   one(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.getActivity.execute(id, user.userId);
+  }
+
+  @ApiOperation({ summary: 'Удалить пробежку: свою или, для администратора, любую' })
+  @ApiParam({ name: 'id', description: 'Идентификатор пробежки', format: 'uuid' })
+  @ApiNoContentResponse({ description: 'Пробежка удалена' })
+  @ApiForbiddenResponse({ description: 'Чужая пробежка', type: ErrorResponseDto })
+  @ApiNotFoundResponse({ description: 'Пробежка не найдена', type: ErrorResponseDto })
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.deleteActivity.execute(user, id);
   }
 
   @ApiOperation({ summary: 'Поставить лайк чужой пробежке' })

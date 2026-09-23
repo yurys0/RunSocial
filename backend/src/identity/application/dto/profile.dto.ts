@@ -1,7 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class UpdateProfileDto {
+import { UserRole } from '../../domain/user-role';
+
+export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Иван Петров' })
   @IsOptional()
   @IsString()
@@ -13,6 +15,18 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsBoolean()
   isPrivate?: boolean;
+
+  @ApiPropertyOptional({ example: 'runner', description: 'Логин; менять может только администратор' })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  login?: string;
+
+  @ApiPropertyOptional({ enum: UserRole, description: 'Роль; менять может только администратор' })
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
 }
 
 export const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

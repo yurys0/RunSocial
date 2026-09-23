@@ -1,6 +1,6 @@
 import { Controller, Sse, UseGuards } from '@nestjs/common';
 import {
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
   ApiProduces,
@@ -9,9 +9,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { map, Observable } from 'rxjs';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
-import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { RedisService } from '../../shared/redis/redis.service';
 import { SyncProgressEvent, syncProgressChannel } from '../infrastructure/sync-queue';
@@ -21,10 +22,10 @@ import { SyncProgressEvent, syncProgressChannel } from '../infrastructure/sync-q
  * Токен — в query: EventSource не умеет слать заголовки.
  */
 @ApiTags('Трекеры')
-@ApiBearerAuth()
-@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
+@ApiCookieAuth()
+@ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })
 @Controller('trackers/syncs')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SuperTokensAuthGuard)
 export class SyncEventsController {
   constructor(private readonly redis: RedisService) {}
 

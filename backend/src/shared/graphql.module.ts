@@ -13,7 +13,8 @@ import { QueryComplexityPlugin } from './graphql/query-complexity.plugin';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       playground: true,
-      context: ({ req }: { req: unknown }) => ({ req }),
+      // res нужен guard'у SuperTokens: он обновляет куки сессии прямо в ответе
+      context: ({ req, res }: { req: unknown; res: unknown }) => ({ req, res }),
     }),
   ],
   providers: [QueryComplexityPlugin],

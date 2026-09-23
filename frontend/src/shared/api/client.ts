@@ -1,11 +1,4 @@
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
-const TOKEN_KEY = 'runsocial:token';
-
-export const tokenStorage = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (token: string) => localStorage.setItem(TOKEN_KEY, token),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
-};
 
 /** Ошибка с кодом ответа: по нему страницы отличают 401 от прочего. */
 export class ApiError extends Error {
@@ -15,11 +8,6 @@ export class ApiError extends Error {
   ) {
     super(message);
   }
-}
-
-function authHeaders(): Record<string, string> {
-  const token = tokenStorage.get();
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export function apiUrl(path: string): string {
@@ -34,10 +22,9 @@ export async function rest<T>(
   const isForm = options.body instanceof FormData;
   const response = await fetch(apiUrl(path), {
     method: options.method ?? 'GET',
-    headers: {
-      ...(options.body && !isForm ? { 'Content-Type': 'application/json' } : {}),
-      ...authHeaders(),
-    },
+    headers: options.body && !isForm ? { 'Content-Type': 'application/json' } : {},
+    // Сессия живёт в cookie, поэтому её нужно слать с каждым запросом
+    credentials: 'include',
     body: isForm ? (options.body as FormData) : options.body ? JSON.stringify(options.body) : undefined,
   });
 
@@ -56,7 +43,8 @@ export async function rest<T>(
 export async function gql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   const response = await fetch(`${API_URL}/graphql`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ query, variables }),
   });
 
@@ -74,9 +62,8 @@ export async function gql<T>(query: string, variables?: Record<string, unknown>)
   return payload.data as T;
 }
 
-/** URL для EventSource: заголовки он слать не умеет, токен идёт в query. */
 export function sseUrl(path: string): string {
-  return `${API_URL}${path}?token=${encodeURIComponent(tokenStorage.get() ?? '')}`;
+  return apiUrl(path);
 }
 
 function extractMessage(payload: unknown): string | null {

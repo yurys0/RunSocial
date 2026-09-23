@@ -14,7 +14,7 @@ import {
 import {
   ApiAcceptedResponse,
   ApiBadRequestResponse,
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -26,9 +26,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
-import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { setLocation } from '../../shared/http/location';
 import { ConnectTrackerUseCase } from '../application/connect-tracker.use-case';
@@ -39,10 +40,10 @@ import { ListTrackerAccountsUseCase } from '../application/list-tracker-accounts
 import { TrackerAccountView } from '../application/tracker-account-view';
 
 @ApiTags('Трекеры')
-@ApiBearerAuth()
-@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
+@ApiCookieAuth()
+@ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })
 @Controller('trackers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SuperTokensAuthGuard)
 export class TrackersController {
   constructor(
     private readonly connectTracker: ConnectTrackerUseCase,
@@ -88,7 +89,7 @@ export class TrackersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   disconnect(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.disconnectTracker.execute(user.userId, id);
+    return this.disconnectTracker.execute(user, id);
   }
 
   @ApiOperation({ summary: 'Создать синхронизацию: задача уходит в очередь, прогресс — в SSE' })
@@ -98,6 +99,6 @@ export class TrackersController {
   @Post(':id/syncs')
   @HttpCode(HttpStatus.ACCEPTED)
   sync(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.initiateSync.execute(user.userId, id);
+    return this.initiateSync.execute(user, id);
   }
 }

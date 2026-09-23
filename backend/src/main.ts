@@ -4,6 +4,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request } from 'express';
+import supertokens from 'supertokens-node';
 
 import { AppModule } from './app.module';
 import { ElapsedTimeInterceptor } from './shared/elapsed-time.interceptor';
@@ -11,7 +12,11 @@ import { DomainExceptionFilter } from './shared/errors/domain-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.PUBLIC_ORIGIN,
+    allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
+    credentials: true,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // поля, не описанные в DTO, отбрасываются
@@ -24,7 +29,7 @@ async function bootstrap() {
   const openApi = new DocumentBuilder()
     .setTitle('RunSocial API')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addCookieAuth('sAccessToken')
     .build();
   SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, openApi), {
     // за nginx API живёт под /api, иначе «Try it out» шлёт запросы мимо префикса

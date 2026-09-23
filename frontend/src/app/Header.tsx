@@ -42,8 +42,8 @@ export function Header() {
                 className="nav-icon"
                 title="Выйти"
                 aria-label="Выйти"
-                onClick={() => {
-                  logout();
+                onClick={async () => {
+                  await logout();
                   navigate('/');
                 }}
               >

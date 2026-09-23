@@ -1,9 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
-import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
 import { CancelFriendRequestUseCase } from '../application/cancel-friend-request.use-case';
 import { ListFriendsUseCase } from '../application/list-friends.use-case';
 import { RemoveFriendUseCase } from '../application/remove-friend.use-case';

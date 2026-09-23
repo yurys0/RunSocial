@@ -1,13 +1,13 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Int, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
-import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
 import { GetFriendshipUseCase } from '../../social/application/get-friendship.use-case';
 import { Friendship } from '../../social/domain/friendship-status';
-import { GetUserProfileUseCase } from '../application/get-user-profile.use-case';
 import { FriendshipType } from '../../social/interface/dto/social.type';
+import { GetUserProfileUseCase } from '../application/get-user-profile.use-case';
 import { UserProfileType } from './dto/user-profile.type';
 
 @Resolver(() => UserProfileType)

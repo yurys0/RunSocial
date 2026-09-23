@@ -2,6 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Inject, Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import {
   TRACKER_ACCOUNT_REPOSITORY,
   TrackerAccountRepository,
@@ -17,15 +18,16 @@ export class InitiateSyncUseCase {
     @InjectQueue(SYNC_QUEUE_NAME) private readonly queue: Queue<SyncJobData>,
   ) {}
 
-  async execute(userId: string, accountId: string): Promise<{ jobId: string }> {
+  async execute(actor: AuthenticatedUser, accountId: string): Promise<{ jobId: string }> {
     const account = await this.accounts.findById(accountId);
-    if (!account || account.userId !== userId) {
+    if (!account || (account.userId !== actor.userId && !actor.isAdmin)) {
       throw new TrackerAccountNotFoundError();
     }
 
     const job = await this.queue.add(
       'sync',
-      { userId, trackerAccountId: accountId },
+      // Пробежки импортируются владельцу привязки, даже если синк запустил администратор
+      { userId: account.userId, trackerAccountId: accountId },
       {
         // Фиксированный jobId не даёт наплодить задач; завершённые удаляем, иначе
         // повторный синк после ошибки был бы невозможен

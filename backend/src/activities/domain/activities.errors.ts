@@ -29,3 +29,9 @@ export class ProfileIsPrivateError extends ForbiddenError {
     super('Профиль закрыт: пробежки видны только друзьям');
   }
 }
+
+export class ForeignActivityError extends ForbiddenError {
+  constructor() {
+    super('Можно удалять только свои пробежки');
+  }
+}

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import {
   TRACKER_ACCOUNT_REPOSITORY,
   TrackerAccountRepository,
@@ -13,9 +14,9 @@ export class DisconnectTrackerUseCase {
   ) {}
 
   /** Удаление привязки уносит и импортированные активности — каскадом на уровне БД. */
-  async execute(userId: string, accountId: string): Promise<void> {
+  async execute(actor: AuthenticatedUser, accountId: string): Promise<void> {
     const account = await this.accounts.findById(accountId);
-    if (!account || account.userId !== userId) {
+    if (!account || (account.userId !== actor.userId && !actor.isAdmin)) {
       throw new TrackerAccountNotFoundError();
     }
     await this.accounts.delete(accountId);

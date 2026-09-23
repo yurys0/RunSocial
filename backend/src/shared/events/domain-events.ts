@@ -2,6 +2,7 @@
 
 export const ACTIVITY_IMPORTED_EVENT = 'activity.imported';
 export const ACTIVITY_LIKED_EVENT = 'activity.liked';
+export const ACTIVITIES_REMOVED_EVENT = 'activities.removed';
 export const PROFILE_UPDATED_EVENT = 'profile.updated';
 export const PROFILE_VISIBILITY_CHANGED_EVENT = 'profile.visibility-changed';
 
@@ -10,6 +11,10 @@ export class ActivityImportedEvent {
     readonly userId: string,
     readonly importedCount: number,
   ) {}
+}
+
+export class ActivitiesRemovedEvent {
+  constructor(readonly userId: string) {}
 }
 
 export class ActivityLikedEvent {

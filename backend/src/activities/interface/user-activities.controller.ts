@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, Req, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -11,9 +11,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
-import { AuthenticatedUser, JwtAuthGuard } from '../../shared/auth/jwt-auth.guard';
 import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/pagination';
 import { ActivityView } from '../application/activity-view';
@@ -21,10 +22,10 @@ import { GetUserActivitiesUseCase } from '../application/get-user-activities.use
 
 // не в identity: тот модуль про пробежки не знает
 @ApiTags('Пробежки')
-@ApiBearerAuth()
-@ApiUnauthorizedResponse({ description: 'Токен не передан или недействителен', type: ErrorResponseDto })
+@ApiCookieAuth()
+@ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })
 @Controller('users/:login/activities')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SuperTokensAuthGuard)
 export class UserActivitiesController {
   constructor(private readonly getUserActivities: GetUserActivitiesUseCase) {}
 

@@ -1,4 +1,9 @@
-import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors/domain-error';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../../shared/errors/domain-error';
 
 export class LoginAlreadyTakenError extends ConflictError {
   constructor(login: string) {
@@ -22,5 +27,29 @@ export class UserNotFoundError extends NotFoundError {
 export class AvatarNotFoundError extends NotFoundError {
   constructor() {
     super('Аватарка не найдена');
+  }
+}
+
+export class ForeignProfileError extends ForbiddenError {
+  constructor() {
+    super('Можно менять только свой профиль');
+  }
+}
+
+export class AdminRightsRequiredError extends ForbiddenError {
+  constructor() {
+    super('Действие доступно только администратору');
+  }
+}
+
+export class CannotChangeOwnRoleError extends ForbiddenError {
+  constructor() {
+    super('Нельзя снять с себя права администратора');
+  }
+}
+
+export class CannotDeleteYourselfError extends ForbiddenError {
+  constructor() {
+    super('Нельзя удалить собственный аккаунт');
   }
 }

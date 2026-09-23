@@ -3,10 +3,12 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 import { CacheService } from '../../shared/cache/cache.service';
 import {
+  ACTIVITIES_REMOVED_EVENT,
   ACTIVITY_IMPORTED_EVENT,
   ACTIVITY_LIKED_EVENT,
   PROFILE_UPDATED_EVENT,
   PROFILE_VISIBILITY_CHANGED_EVENT,
+  ActivitiesRemovedEvent,
   ActivityImportedEvent,
   ActivityLikedEvent,
   ProfileUpdatedEvent,
@@ -28,6 +30,12 @@ export class DashboardCacheListener {
     }
     await this.cache.del(...CACHE_KEYS.allLandings(), CACHE_KEYS.profile(event.userId));
     this.logger.log(`Кэш сброшен: импортировано ${event.importedCount} активностей`);
+  }
+
+  @OnEvent(ACTIVITIES_REMOVED_EVENT)
+  async onActivitiesRemoved(event: ActivitiesRemovedEvent): Promise<void> {
+    await this.cache.del(...CACHE_KEYS.allLandings(), CACHE_KEYS.profile(event.userId));
+    this.logger.log(`Кэш сброшен: пробежки пользователя ${event.userId} удалены`);
   }
 
   @OnEvent(ACTIVITY_LIKED_EVENT)

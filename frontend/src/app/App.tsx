@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { ActivityPage } from '../pages/activity/ActivityPage';
+import { AdminPage } from '../pages/admin/AdminPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { FeedPage } from '../pages/feed/FeedPage';
@@ -9,7 +10,7 @@ import { LandingPage } from '../pages/landing/LandingPage';
 import { PeoplePage } from '../pages/people/PeoplePage';
 import { ProfilePage } from '../pages/profile/ProfilePage';
 import '../shared/ui/styles.css';
-import { AuthProvider, ProtectedRoute } from './auth-context';
+import { AdminRoute, AuthProvider, ProtectedRoute } from './auth-context';
 import { Header } from './Header';
 
 export function App() {
@@ -32,6 +33,9 @@ export function App() {
             path="/activities/:id"
             element={<ProtectedRoute><ActivityPage /></ProtectedRoute>}
           />
+
+          {/* Ссылки в шапке нет — админка открывается по прямому адресу */}
+          <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

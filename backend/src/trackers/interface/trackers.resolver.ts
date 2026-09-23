@@ -1,9 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import { CurrentUser } from '../../shared/auth/current-user.decorator';
 import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
-import { AuthenticatedUser } from '../../shared/auth/jwt-auth.guard';
 import { ConnectTrackerUseCase } from '../application/connect-tracker.use-case';
 import { DisconnectTrackerUseCase } from '../application/disconnect-tracker.use-case';
 import { InitiateSyncUseCase } from '../application/initiate-sync.use-case';
@@ -32,12 +32,12 @@ export class TrackersResolver {
 
   @Mutation(() => Boolean, { description: 'Отвязать трекер вместе с импортированными пробежками' })
   async disconnectTracker(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
-    await this.disconnect.execute(user.userId, id);
+    await this.disconnect.execute(user, id);
     return true;
   }
 
   @Mutation(() => SyncStartedType, { description: 'Запустить синхронизацию: задача уходит в очередь' })
   startTrackerSync(@CurrentUser() user: AuthenticatedUser, @Args('id') id: string) {
-    return this.initiateSync.execute(user.userId, id);
+    return this.initiateSync.execute(user, id);
   }
 }

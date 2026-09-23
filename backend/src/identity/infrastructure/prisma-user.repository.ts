@@ -19,11 +19,6 @@ export class PrismaUserRepository implements UserRepository {
     return row ? this.toDomain(row) : null;
   }
 
-  async existsByLogin(login: string): Promise<boolean> {
-    const count = await this.prisma.user.count({ where: { login } });
-    return count > 0;
-  }
-
   async search(query: string, limit: number, excludeUserId?: string): Promise<User[]> {
     const rows = await this.prisma.user.findMany({
       where: {
@@ -57,10 +52,15 @@ export class PrismaUserRepository implements UserRepository {
     return this.toDomain(row);
   }
 
+  async delete(id: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id } });
+  }
+
   async save(user: User): Promise<User> {
     const row = await this.prisma.user.update({
       where: { id: user.id },
       data: {
+        login: user.login,
         displayName: user.displayName,
         avatarUrl: user.avatarKey,
         isPrivate: user.isPrivate,
@@ -73,7 +73,6 @@ export class PrismaUserRepository implements UserRepository {
     return new User(
       row.id,
       row.login,
-      row.passwordHash,
       row.displayName,
       row.avatarUrl,
       row.isPrivate,

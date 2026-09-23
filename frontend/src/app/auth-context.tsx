@@ -1,13 +1,15 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-import { ApiError, gql, rest, tokenStorage } from '../shared/api/client';
+import { hasSession, isAdmin, signIn, signOut, signUp } from '../shared/api/auth';
+import { gql } from '../shared/api/client';
 
 export type CurrentUser = {
   id: string;
   login: string;
   displayName: string;
   avatarUrl: string | null;
+  isAdmin: boolean;
 };
 
 type AuthContextValue = {
@@ -15,35 +17,32 @@ type AuthContextValue = {
   loading: boolean;
   login: (login: string, password: string) => Promise<void>;
   register: (login: string, password: string, displayName: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-type AuthResponse = { accessToken: string; user: CurrentUser };
+type Profile = Omit<CurrentUser, 'isAdmin'>;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /** Токен переживает перезагрузку, поэтому при старте его проверяем. */
+  /** Сессия переживает перезагрузку, поэтому при старте её проверяем. */
   const refresh = useCallback(async () => {
-    if (!tokenStorage.get()) {
+    if (!(await hasSession())) {
       setUser(null);
       setLoading(false);
       return;
     }
     try {
-      const data = await gql<{ me: CurrentUser }>(
-        '{ me { id login displayName avatarUrl } }',
-      );
-      setUser(data.me);
-    } catch (error) {
-      // Протухший токен убираем, чтобы не показывать приватные страницы
-      if (error instanceof ApiError && error.status === 401) {
-        tokenStorage.clear();
-      }
+      const [data, admin] = await Promise.all([
+        gql<{ me: Profile }>('{ me { id login displayName avatarUrl } }'),
+        isAdmin(),
+      ]);
+      setUser({ ...data.me, isAdmin: admin });
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -54,27 +53,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  const applyAuth = (response: AuthResponse) => {
-    tokenStorage.set(response.accessToken);
-    setUser(response.user);
-  };
-
   const value: AuthContextValue = {
     user,
     loading,
     login: async (login, password) => {
-      applyAuth(await rest<AuthResponse>('/auth/login', { method: 'POST', body: { login, password } }));
+      await signIn(login, password);
+      await refresh();
     },
     register: async (login, password, displayName) => {
-      applyAuth(
-        await rest<AuthResponse>('/auth/register', {
-          method: 'POST',
-          body: { login, password, displayName },
-        }),
-      );
+      await signUp(login, password, displayName);
+      await refresh();
     },
-    logout: () => {
-      tokenStorage.clear();
+    logout: async () => {
+      await signOut();
       setUser(null);
     },
     refresh,
@@ -99,4 +90,17 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     return <div className="container spinner">Загрузка…</div>;
   }
   return user ? <>{children}</> : <Navigate to="/login" state={{ from: location.pathname }} replace />;
+}
+
+/** Ссылки на админку в интерфейсе нет: чужой пользователь уходит на главную. */
+export function AdminRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="container spinner">Загрузка…</div>;
+  }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return user.isAdmin ? <>{children}</> : <Navigate to="/" replace />;
 }

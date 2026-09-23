@@ -74,6 +74,25 @@ services:
         condition: service_healthy
     command: ['npx', 'prisma', 'migrate', 'deploy']
 
+  # Ядро SuperTokens: пользователи, сессии и роли лежат в схеме supertokens той же базы
+  supertokens:
+    image: supertokens/supertokens-postgresql:12.2
+    restart: unless-stopped
+    environment:
+      POSTGRESQL_CONNECTION_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      POSTGRESQL_TABLE_SCHEMA: supertokens
+      API_KEYS: ${SUPERTOKENS_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # Схему supertokens создаёт миграция Prisma
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'bash', '-c', 'exec 3<>/dev/tcp/127.0.0.1/3567 && echo -e "GET /hello HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "Hello"']
+      interval: 10s
+      retries: 10
+
   backend-api:
     image: ${BACKEND_IMAGE:-runsocial-backend}
     restart: unless-stopped
@@ -83,6 +102,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SUPERTOKENS_CONNECTION_URI: http://supertokens:3567
     ports:
       - '127.0.0.1:${API_PORT}:${API_PORT}'
     depends_on:
@@ -92,6 +112,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      supertokens:
+        condition: service_healthy
     command: ['node', 'dist/main.js']
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://localhost:${API_PORT}/health']

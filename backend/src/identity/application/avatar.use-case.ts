@@ -3,12 +3,17 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import { AuthenticatedUser } from '../../shared/auth/authenticated-user';
 import {
   PROFILE_UPDATED_EVENT,
   ProfileUpdatedEvent,
 } from '../../shared/events/domain-events';
 import { S3Service, StoredObject } from '../../shared/storage/s3.service';
-import { AvatarNotFoundError, UserNotFoundError } from '../domain/identity.errors';
+import {
+  AvatarNotFoundError,
+  ForeignProfileError,
+  UserNotFoundError,
+} from '../domain/identity.errors';
 import { USER_REPOSITORY, UserRepository } from '../domain/user.repository';
 import { toUserView, UserView } from './user-view';
 
@@ -56,7 +61,11 @@ export class AvatarUseCase {
     return object;
   }
 
-  async remove(userId: string): Promise<UserView> {
+  async remove(actor: AuthenticatedUser, userId: string): Promise<UserView> {
+    if (actor.userId !== userId && !actor.isAdmin) {
+      throw new ForeignProfileError();
+    }
+
     const user = await this.users.findById(userId);
     if (!user) {
       throw new UserNotFoundError();

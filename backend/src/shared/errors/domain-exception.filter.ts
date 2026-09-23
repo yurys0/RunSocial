@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { GraphQLError } from 'graphql';
+import { SuperTokensExceptionFilter } from 'supertokens-nestjs';
+import { Error as SuperTokensError } from 'supertokens-node';
 
 import {
   ConflictError,
@@ -28,8 +30,18 @@ const DOMAIN_ERROR_STATUS: Array<[new (...args: never[]) => DomainError, HttpSta
 @Catch()
 export class DomainExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(DomainExceptionFilter.name);
+  private readonly superTokens = new SuperTokensExceptionFilter();
 
   catch(exception: unknown, host: ArgumentsHost) {
+    // Этот фильтр ловит всё, поэтому ошибки сессии отдаём SuperTokens сами: иначе
+    // вместо 401 и обновления куки клиент получал бы 500
+    if (SuperTokensError.isErrorFromSuperTokens(exception)) {
+      if (host.getType<'graphql'>() === 'graphql') {
+        return this.toSessionGraphQLError(exception);
+      }
+      return this.superTokens.catch(exception, host);
+    }
+
     // У GraphQL нет HTTP-ответа: возвращаем ошибку, Apollo положит её в errors[]
     if (host.getType<'graphql'>() === 'graphql') {
       return this.toGraphQLError(exception);
@@ -63,6 +75,15 @@ export class DomainExceptionFilter implements ExceptionFilter {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Внутренняя ошибка сервера',
     });
+  }
+
+  private toSessionGraphQLError(exception: { type: string }): GraphQLError {
+    const status =
+      exception.type === 'INVALID_CLAIMS' ? HttpStatus.FORBIDDEN : HttpStatus.UNAUTHORIZED;
+    return new GraphQLError(
+      status === HttpStatus.FORBIDDEN ? 'Недостаточно прав' : 'Сессия не найдена или истекла',
+      { extensions: { code: status } },
+    );
   }
 
   private toGraphQLError(exception: unknown): GraphQLError {

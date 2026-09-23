@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { IdentityModule } from '../identity/identity.module';
 import { SocialModule } from '../social/social.module';
 import { ActivityEnricher } from './application/activity-enricher';
+import { DeleteActivityUseCase } from './application/delete-activity.use-case';
 import { GetActivityUseCase } from './application/get-activity.use-case';
 import { GetFeedUseCase } from './application/get-feed.use-case';
 import { GetUserActivitiesUseCase } from './application/get-user-activities.use-case';
@@ -31,6 +32,7 @@ import { UserActivitiesController } from './interface/user-activities.controller
     GetUserProfileUseCase,
     GetActivityUseCase,
     LikeActivityUseCase,
+    DeleteActivityUseCase,
     ActivitiesResolver,
     ProfileResolver,
   ],

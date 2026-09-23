@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import { sseUrl } from './client';
 
-/** JWT уходит в query: EventSource не умеет слать заголовки. */
 export function useSse<T>(path: string, onEvent: (event: T) => void, enabled = true) {
   const [connected, setConnected] = useState(false);
   // Колбэк держим в ref, чтобы его обновление не пересоздавало соединение
