@@ -90,7 +90,7 @@ async function validateLogin(value: unknown): Promise<string | undefined> {
   return undefined;
 }
 
-/** Свой валидатор вместо штатного: по брифу требований к сложности пароля нет. */
+/** По брифу требований к сложности пароля нет. */
 async function validatePassword(value: unknown): Promise<string | undefined> {
   if (typeof value !== 'string' || value.length < 1) {
     return 'Пароль не может быть пустым';

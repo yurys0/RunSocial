@@ -17,7 +17,7 @@ export const CurrentUser = createParamDecorator(
       throw new UnauthorizedException('Сессия не найдена');
     }
 
-    // Роли SuperTokens кладёт в payload access-токена, отдельный запрос к ядру не нужен
+    // Роль лежит в payload access-токена — запрос к ядру не нужен
     const roles = UserRoles.UserRoleClaim.getValueFromPayload(
       session.getAccessTokenPayload(),
       {} as UserContext,
