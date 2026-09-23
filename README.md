@@ -187,12 +187,10 @@ docker compose up -d --build
 ### Переход на SuperTokens на работающем сервере
 
 Миграция удаляет колонку `passwordHash`, поэтому на сервере, где уже есть живые
-аккаунты, пароли нужно перенести в SuperTokens **до** обычного деплоя. Порядок такой:
+аккаунты, пароли переносят в SuperTokens **до того, как туда приедет новая версия**:
 
 ```bash
 # 1. дописать в .env: SUPERTOKENS_CONNECTION_URI, SUPERTOKENS_API_KEY, PUBLIC_ORIGIN
-git pull --ff-only
-docker compose pull backend-api frontend
 
 # 2. схема под ядро и запуск только его: миграцию сейчас применять нельзя
 docker compose exec -T postgres psql -U runsocial -d runsocial \
@@ -200,16 +198,18 @@ docker compose exec -T postgres psql -U runsocial -d runsocial \
 docker compose up -d --no-deps supertokens
 
 # 3. перенос паролей, пока колонка ещё на месте
-docker compose run --rm --no-deps backend-api node dist/scripts/import-passwords.js
-
-# 4. обычный деплой: миграция удалит колонку, сервисы поднимутся
-docker compose up -d
+docker compose run --rm --no-deps \
+  -v "$PWD/backend/scripts/import-passwords.js:/app/import-passwords.js" \
+  backend-api node /app/import-passwords.js
 ```
 
+Дальше идёт обычный деплой: миграция удаляет колонку, сервисы поднимаются.
+
 Скрипт отдаёт bcrypt-хэши ядру как есть и привязывает наш `User.id` к созданному
-аккаунту внешним идентификатором — пробежки, лайки, трекеры и дружбы остаются
-на месте, пользователи входят прежними паролями. Запуск повторно безопасен, а после
-удаления колонки скрипт откажется работать. Когда перенос сделан, `backend/src/scripts/`
+аккаунту внешним идентификатором — пробежки, лайки, трекеры и дружбы остаются на месте,
+пользователи входят прежними паролями. Это обычный JS, который монтируется в уже собранный
+образ, поэтому пересобирать на сервере ничего не нужно. Повторный запуск безопасен, а после
+удаления колонки скрипт откажется работать. Когда перенос сделан, `backend/scripts/`
 можно удалить.
 
 Наружу смотрит только Caddy на портах 80 и 443: он получает и продлевает сертификат

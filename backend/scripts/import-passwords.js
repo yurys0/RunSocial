@@ -1,23 +1,24 @@
-import { PrismaClient } from '@prisma/client';
+'use strict';
 
-type LegacyUser = { id: string; login: string; passwordHash: string };
-
-type ImportResponse = { status: string; user?: { id: string } };
-type MappingResponse = { status: string };
+const { PrismaClient } = require('@prisma/client');
 
 /**
  * Разовый перенос паролей в SuperTokens при переходе на него с собственной
  * аутентификации. Запускать до миграции, которая удаляет колонку passwordHash.
  * Аккаунт в ядре получает свой идентификатор, а наш User.id привязывается к нему
  * внешним: на него ссылаются пробежки, лайки, трекеры и дружбы.
+ *
+ * Обычный JS, а не часть сборки: скрипт монтируется в уже собранный образ бэкенда,
+ * чтобы перенос можно было сделать до деплоя новой версии.
  */
-async function main(): Promise<void> {
+async function main() {
   const core = requireEnv('SUPERTOKENS_CONNECTION_URI').replace(/\/$/, '');
   const prisma = new PrismaClient();
 
   const users = await readLegacyUsers(prisma);
   if (users.length === 0) {
     console.log('Переносить нечего: пользователей с паролями нет.');
+    await prisma.$disconnect();
     return;
   }
 
@@ -25,7 +26,7 @@ async function main(): Promise<void> {
   let skipped = 0;
 
   for (const user of users) {
-    const result = await call<ImportResponse>(core, '/recipe/user/passwordhash/import', {
+    const result = await call(core, '/recipe/user/passwordhash/import', {
       email: user.login,
       passwordHash: user.passwordHash,
       hashingAlgorithm: 'bcrypt',
@@ -34,7 +35,7 @@ async function main(): Promise<void> {
       throw new Error(`${user.login}: ядро отклонило хэш (${result.status})`);
     }
 
-    const mapping = await call<MappingResponse>(core, '/recipe/userid/map', {
+    const mapping = await call(core, '/recipe/userid/map', {
       superTokensUserId: result.user.id,
       externalUserId: user.id,
     });
@@ -53,11 +54,11 @@ async function main(): Promise<void> {
   await prisma.$disconnect();
 }
 
-async function readLegacyUsers(prisma: PrismaClient): Promise<LegacyUser[]> {
+async function readLegacyUsers(prisma) {
   try {
-    return await prisma.$queryRaw<LegacyUser[]>`
-      SELECT id, login, "passwordHash" FROM "User" ORDER BY "createdAt"
-    `;
+    return await prisma.$queryRawUnsafe(
+      'SELECT id, login, "passwordHash" FROM "User" ORDER BY "createdAt"',
+    );
   } catch {
     throw new Error(
       'Не удалось прочитать колонку passwordHash: миграция уже применена, переносить нечего или поздно.',
@@ -65,7 +66,7 @@ async function readLegacyUsers(prisma: PrismaClient): Promise<LegacyUser[]> {
   }
 }
 
-async function call<T>(core: string, path: string, body: unknown): Promise<T> {
+async function call(core, path, body) {
   const apiKey = process.env.SUPERTOKENS_API_KEY;
   const response = await fetch(`${core}${path}`, {
     method: 'POST',
@@ -79,10 +80,10 @@ async function call<T>(core: string, path: string, body: unknown): Promise<T> {
   if (!response.ok) {
     throw new Error(`${path}: ядро ответило ${response.status} ${await response.text()}`);
   }
-  return (await response.json()) as T;
+  return response.json();
 }
 
-function requireEnv(name: string): string {
+function requireEnv(name) {
   const value = process.env[name];
   if (!value) {
     throw new Error(`Не задана переменная ${name}`);
@@ -90,7 +91,7 @@ function requireEnv(name: string): string {
   return value;
 }
 
-main().catch((error: Error) => {
+main().catch((error) => {
   console.error(error.message);
   process.exit(1);
 });
