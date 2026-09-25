@@ -17,7 +17,6 @@ import { TrackerAuthFailedError, TrackerUnavailableError } from '../../domain/tr
 import { ADIDAS_SUPPORTED_SPORT_TYPE_IDS } from './sport-filters';
 import { TrackerHttp } from './tracker-http';
 
-/** Размер записи в бинарном GPS-треке и её раскладка — см. _decode_gps_trace в Python-версии */
 const GPS_RECORD_SIZE = 38;
 
 type RuntasticAuthResponse = {
@@ -39,7 +38,6 @@ type RuntasticActivity = {
     duration?: number | null;
     start_time?: number | null;
     end_time?: number | null;
-    /** Дистанции здесь нет — она приходит внутри features, см. extractDistanceMeters */
     features?: RuntasticFeature[] | null;
     [key: string]: unknown;
   };
@@ -53,7 +51,6 @@ type RuntasticActivitiesResponse = {
   links?: { next?: string | null } | null;
 };
 
-/** Порт исходного Python-клиента Runtastic; ADIDAS в нашем enum — это Adidas Running. */
 @Injectable()
 export class RuntasticProvider implements TrackerProvider {
   readonly provider = TrackerProviderName.ADIDAS;
@@ -123,7 +120,6 @@ export class RuntasticProvider implements TrackerProvider {
       if (!sportTypeId || !ADIDAS_SUPPORTED_SPORT_TYPE_IDS.includes(sportTypeId)) {
         return false;
       }
-      // Инкрементальный синк: у Runtastic нет параметра `since`, фильтруем на своей стороне
       const startTime = activity.attributes.start_time;
       return !since || (startTime != null && startTime > since.getTime());
     });
@@ -134,7 +130,6 @@ export class RuntasticProvider implements TrackerProvider {
       result.push({
         externalId: activity.id,
         distanceMeters: this.extractDistanceMeters(activity),
-        // duration приходит в миллисекундах
         durationSeconds: Math.round((activity.attributes.duration ?? 0) / 1000),
         startedAt: new Date(startTimeMs),
         endedAt: this.resolveEndedAt(activity, startTimeMs),
@@ -154,7 +149,6 @@ export class RuntasticProvider implements TrackerProvider {
     return new Date(endTime);
   }
 
-  /** Дистанция лежит не в attributes, а в features: track_metrics, запасной — initial_values. */
   private extractDistanceMeters(activity: RuntasticActivity): number {
     const features = activity.attributes.features ?? [];
     for (const featureType of ['track_metrics', 'initial_values']) {
@@ -166,7 +160,6 @@ export class RuntasticProvider implements TrackerProvider {
     return 0;
   }
 
-  /** Одна страница активностей — как в Python-версии; в ответе есть links.next. */
   private async fetchActivitiesPage(session: TrackerSession): Promise<RuntasticActivity[]> {
     const response = await this.hubs.getJson<RuntasticActivitiesResponse>(
       `/sport_activities/v2/users/${session.externalUserId}/sport_activities`,
@@ -185,7 +178,6 @@ export class RuntasticProvider implements TrackerProvider {
       { headers: this.buildAuthHeaders(session.accessToken) },
     );
 
-    // 404 — трека просто нет, тело при этом JSON, а не бинарник
     if (response.status === 404) {
       return null;
     }
@@ -197,7 +189,6 @@ export class RuntasticProvider implements TrackerProvider {
     try {
       raw = gunzipSync(raw);
     } catch {
-      // Не gzip — значит пришёл несжатый бинарник, работаем с ним как есть
     }
 
     const points = this.decodeGpsTrace(raw, startTimeMs);
@@ -235,7 +226,6 @@ export class RuntasticProvider implements TrackerProvider {
         lat: latitude,
         lng: longitude,
         altitudeMeters: altitude,
-        // В трек приходит абсолютный epoch в миллисекундах — приводим к смещению от старта
         timestampOffsetSec: Math.max(0, Math.round((timestampMs - startTimeMs) / 1000)),
       });
       offset += GPS_RECORD_SIZE;

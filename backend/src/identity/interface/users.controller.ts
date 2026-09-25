@@ -48,7 +48,6 @@ import { UpdateUserUseCase } from '../application/update-user.use-case';
 import { UserView } from '../application/user-view';
 import { ForeignProfileError } from '../domain/identity.errors';
 
-// тип проверяется по сигнатуре файла, а не по заголовку из браузера
 const avatarFilePipe = new ParseFilePipe({
   validators: [
     new MaxFileSizeValidator({ maxSize: MAX_AVATAR_BYTES }),
@@ -120,7 +119,6 @@ export class UsersController {
     @Param('id') id: string,
     @UploadedFile(avatarFilePipe) file: UploadedImage,
   ) {
-    // Загружать картинку за другого нельзя даже администратору — он может только удалить
     if (resolveUserId(user, id) !== user.userId) {
       throw new ForeignProfileError();
     }

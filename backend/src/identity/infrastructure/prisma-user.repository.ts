@@ -22,7 +22,6 @@ export class PrismaUserRepository implements UserRepository {
   async search(query: string, limit: number, excludeUserId?: string): Promise<User[]> {
     const rows = await this.prisma.user.findMany({
       where: {
-        // Пустой запрос — это раздел «Люди»: условие по тексту не добавляем
         ...(query
           ? {
               OR: [

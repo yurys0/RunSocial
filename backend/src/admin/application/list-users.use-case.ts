@@ -12,7 +12,6 @@ export class ListUsersUseCase {
   ) {}
 
   async execute(query: string, limit: number, offset: number): Promise<AdminUserView[]> {
-    // Список администраторов забираем одним запросом на всю выдачу, а не по пользователю
     const [rows, adminIds] = await Promise.all([
       this.admin.listUsers(query.trim(), limit, offset),
       this.accounts.listAdminIds(),

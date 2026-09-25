@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { Observable } from 'rxjs';
 
-/** Два подключения: ioredis в режиме подписки не принимает обычные команды. */
 @Injectable()
 export class RedisService implements OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);

@@ -1,6 +1,5 @@
 import { TrackerAccountStatus, TrackerProviderName } from '@prisma/client';
 
-/** Учётные данные лежат зашифрованными и расшифровываются только на время похода в трекер. */
 export class TrackerAccount {
   constructor(
     readonly id: string,

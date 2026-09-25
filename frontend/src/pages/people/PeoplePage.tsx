@@ -14,7 +14,6 @@ import { Avatar, Button, Card, ErrorMessage, Field, Spinner } from '../../shared
 
 export function PeoplePage() {
   const [query, setQuery] = useState('');
-  // Список перезагружается по кнопке, а не на каждую букву
   const [submitted, setSubmitted] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -26,7 +25,6 @@ export function PeoplePage() {
     setSubmitted(query.trim());
   };
 
-  /** После действия перезапрашиваем выдачу: человек остаётся на месте, меняется кнопка. */
   const act = async (action: () => Promise<unknown>) => {
     setActionError(null);
     try {

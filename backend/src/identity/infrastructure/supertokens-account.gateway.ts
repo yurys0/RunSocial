@@ -45,8 +45,6 @@ export class SuperTokensAccountGateway implements AccountGateway {
     } else {
       await UserRoles.removeUserRole(TENANT_ID, userId, ADMIN_ROLE);
     }
-    // Роль лежит в payload access-токена, поэтому старые сессии закрываем: иначе права
-    // менялись бы только после следующего входа
     await Session.revokeAllSessionsForUser(userId);
   }
 

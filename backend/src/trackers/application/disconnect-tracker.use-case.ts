@@ -13,7 +13,6 @@ export class DisconnectTrackerUseCase {
     @Inject(TRACKER_ACCOUNT_REPOSITORY) private readonly accounts: TrackerAccountRepository,
   ) {}
 
-  /** Удаление привязки уносит и импортированные активности — каскадом на уровне БД. */
   async execute(actor: AuthenticatedUser, accountId: string): Promise<void> {
     const account = await this.accounts.findById(accountId);
     if (!account || (account.userId !== actor.userId && !actor.isAdmin)) {

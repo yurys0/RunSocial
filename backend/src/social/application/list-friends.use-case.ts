@@ -30,7 +30,6 @@ export class ListFriendsUseCase {
     return this.withUsers(links, (link) => link.toUserId);
   }
 
-  /** Участники заявок подтягиваются одним запросом, а не по запросу на каждую. */
   private async withUsers(
     links: FriendLink[],
     pickUserId: (link: FriendLink) => string,

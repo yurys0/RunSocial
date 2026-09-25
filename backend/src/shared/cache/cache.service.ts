@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { RedisService } from '../redis/redis.service';
 
-/** Отдельный cache-manager не подключаем: нужны только get/set/del с TTL. */
 @Injectable()
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);

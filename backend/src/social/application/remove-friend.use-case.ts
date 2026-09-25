@@ -8,7 +8,6 @@ import { FriendRequestNotFoundError } from '../domain/social.errors';
 export class RemoveFriendUseCase {
   constructor(@Inject(FRIEND_LINK_REPOSITORY) private readonly friendLinks: FriendLinkRepository) {}
 
-  /** Связь стираем целиком: иначе бывший друг не смог бы отправить заявку заново. */
   async execute(userId: string, otherUserId: string): Promise<void> {
     const link = await this.friendLinks.findBetween(userId, otherUserId);
     if (!link || link.status !== FriendLinkStatus.ACCEPTED) {

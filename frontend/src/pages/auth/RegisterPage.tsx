@@ -17,7 +17,6 @@ export function RegisterPage() {
     setSubmitting(true);
     try {
       await register(form.login, form.password, form.displayName);
-      // Аватарка загружается уже из профиля: так регистрация остаётся обычной JSON-формой
       navigate('/feed', { replace: true });
     } catch (err) {
       setError((err as Error).message);

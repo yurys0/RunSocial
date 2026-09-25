@@ -7,7 +7,6 @@ export type Pagination = { limit: number; offset: number };
 
 export const MAX_PAGE_SIZE = 50;
 
-// @Type нужен, потому что из query всё приходит строками
 export class PaginationQueryDto {
   @ApiPropertyOptional({ minimum: 1, maximum: MAX_PAGE_SIZE, default: 20 })
   @IsOptional()
@@ -25,7 +24,6 @@ export class PaginationQueryDto {
   offset: number = 0;
 }
 
-// prev/next в заголовке Link; count не считаем — next есть, пока страница полная
 export function setPaginationLinks(
   req: Request,
   res: Response,

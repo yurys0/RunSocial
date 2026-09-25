@@ -8,6 +8,5 @@ export enum FriendshipStatus {
 
 export type Friendship = {
   status: FriendshipStatus;
-  /** Заполнен только для REQUEST_RECEIVED: по нему принимают или отклоняют заявку */
   requestId: string | null;
 };

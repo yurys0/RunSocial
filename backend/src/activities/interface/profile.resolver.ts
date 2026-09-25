@@ -35,7 +35,6 @@ export class ProfileResolver {
     return this.getProfile.byLogin(login, viewer.userId, activitiesLimit);
   }
 
-  /** Отдельно от профиля: профиль кэшируется и одинаков для всех, отношение — нет. */
   @ResolveField(() => FriendshipType)
   friendship(
     @CurrentUser() viewer: AuthenticatedUser,

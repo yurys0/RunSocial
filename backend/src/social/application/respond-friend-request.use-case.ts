@@ -39,7 +39,6 @@ export class RespondFriendRequestUseCase {
     return { id: saved.id, status: saved.status };
   }
 
-  /** Чужая заявка даёт 404, а не 403: иначе по коду ответа можно узнать, что она существует. */
   private async loadPending(userId: string, requestId: string) {
     const link = await this.friendLinks.findById(requestId);
     if (!link || !link.isPendingFor(userId)) {

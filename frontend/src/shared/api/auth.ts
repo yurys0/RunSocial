@@ -6,7 +6,6 @@ import { UserRoleClaim } from 'supertokens-web-js/recipe/userroles';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 const ADMIN_ROLE = 'admin';
 
-// VITE_API_URL — либо относительный префикс за nginx, либо полный адрес API в dev-режиме
 const isAbsolute = /^https?:\/\//.test(API_URL);
 
 export function initAuth(): void {
@@ -20,7 +19,6 @@ export function initAuth(): void {
   });
 }
 
-// Тексты штатных проверок SuperTokens приходят по-английски, а их видит пользователь
 const FIELD_ERRORS: Record<string, string> = {
   'This email already exists. Please sign in instead.': 'Логин уже занят',
   'Field is not optional': 'Поле обязательно',

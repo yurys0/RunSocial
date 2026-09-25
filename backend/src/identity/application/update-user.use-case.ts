@@ -54,7 +54,6 @@ export class UpdateUserUseCase {
     }
 
     if (dto.login !== undefined && dto.login !== user.login) {
-      // Логин меняем сначала в SuperTokens: уникальность проверяет ядро
       await this.accounts.changeLogin(targetUserId, dto.login);
       user.changeLogin(dto.login);
     }
@@ -71,7 +70,6 @@ export class UpdateUserUseCase {
       this.events.emit(PROFILE_UPDATED_EVENT, new ProfileUpdatedEvent(targetUserId));
     }
     if (dto.isPrivate !== undefined) {
-      // Сбрасываем и профиль, и лендинг: состав публичной статистики изменился
       this.events.emit(
         PROFILE_VISIBILITY_CHANGED_EVENT,
         new ProfileVisibilityChangedEvent(targetUserId),

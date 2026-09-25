@@ -7,7 +7,6 @@ import { TypeInput } from 'supertokens-node/types';
 
 import { UserRepository } from '../domain/user.repository';
 
-/** Логин пользователя SuperTokens хранит в поле email: формата адреса ядро не требует. */
 export const LOGIN_FIELD = 'email';
 export const PASSWORD_FIELD = 'password';
 export const DISPLAY_NAME_FIELD = 'displayName';
@@ -29,7 +28,6 @@ export function buildSuperTokensOptions(
       apiDomain: origin,
       websiteDomain: origin,
       apiBasePath: '/auth',
-      // nginx срезает /api, поэтому у браузера путь длиннее, чем у бэкенда
       apiGatewayPath: '/api',
       websiteBasePath: '/login',
     },
@@ -58,7 +56,6 @@ export function buildSuperTokensOptions(
                   displayName: formFieldValue(input.formFields, DISPLAY_NAME_FIELD),
                 });
               } catch (error) {
-                // Иначе в ядре остался бы аккаунт без профиля, и вход вёл бы в никуда
                 await supertokens.deleteUser(response.user.id);
                 throw error;
               }
@@ -68,7 +65,6 @@ export function buildSuperTokensOptions(
         },
       }),
       Session.init({
-        // SSE не умеет слать заголовки, поэтому сессия всегда живёт в cookie
         getTokenTransferMethod: () => 'cookie',
       }),
       UserRoles.init(),
@@ -90,7 +86,6 @@ async function validateLogin(value: unknown): Promise<string | undefined> {
   return undefined;
 }
 
-/** По брифу требований к сложности пароля нет. */
 async function validatePassword(value: unknown): Promise<string | undefined> {
   if (typeof value !== 'string' || value.length < 1) {
     return 'Пароль не может быть пустым';

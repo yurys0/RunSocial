@@ -5,7 +5,6 @@ import { Avatar, Card, formatDate, formatDuration, formatKm, formatPace } from '
 import { likeActivity, unlikeActivity } from './api';
 import { Activity } from './types';
 
-/** Лайк обновляем оптимистично, но счётчик берём из ответа — он точен при параллельных лайках. */
 export function ActivityCard({
   activity,
   showAuthor = true,

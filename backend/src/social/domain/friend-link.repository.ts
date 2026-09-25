@@ -4,7 +4,6 @@ import { FriendLink } from './friend-link.entity';
 export const FRIEND_LINK_REPOSITORY = Symbol('FRIEND_LINK_REPOSITORY');
 
 export interface FriendLinkRepository {
-  // без pagination — все друзья, так собирается лента
   findAcceptedFriendIds(userId: string, pagination?: Pagination): Promise<string[]>;
   areFriends(userId: string, otherUserId: string): Promise<boolean>;
 

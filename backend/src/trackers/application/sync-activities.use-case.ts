@@ -16,7 +16,6 @@ import { SyncProgressEvent, syncProgressChannel } from '../infrastructure/sync-q
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Выполняется в воркере; прогресс идёт в Redis, откуда API ретранслирует его в SSE. */
 @Injectable()
 export class SyncActivitiesUseCase {
   private readonly logger = new Logger(SyncActivitiesUseCase.name);
@@ -32,7 +31,6 @@ export class SyncActivitiesUseCase {
     config: ConfigService,
   ) {
     this.initialSyncMonths = Number(config.get<string>('TRACKER_INITIAL_SYNC_MONTHS') ?? 12);
-    // 0 — порога нет, импортируем всё, что отдал трекер
     this.minDistanceMeters = Number(config.get<string>('TRACKER_MIN_DISTANCE_METERS') ?? 0);
   }
 
@@ -57,7 +55,6 @@ export class SyncActivitiesUseCase {
         void publish({ ...base, stage: 'progress', done, total });
       });
 
-      // Короткие пробежки отсекаем до импорта — в базу они не попадают совсем
       const activities = fetched.filter(
         (activity) => activity.distanceMeters >= this.minDistanceMeters,
       );
@@ -83,7 +80,6 @@ export class SyncActivitiesUseCase {
     }
   }
 
-  /** Первый синк тянет заданную глубину истории, последующие — только новое. */
   private resolveSince(account: TrackerAccount): Date | null {
     if (account.lastSyncAt) {
       return account.lastSyncAt;

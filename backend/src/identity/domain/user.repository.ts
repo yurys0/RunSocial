@@ -2,7 +2,6 @@ import { User } from './user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
-/** id приходит из SuperTokens: профиль и аккаунт в ядре — это один и тот же пользователь. */
 export type CreateUserData = {
   id: string;
   login: string;

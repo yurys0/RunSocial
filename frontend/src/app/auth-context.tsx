@@ -29,7 +29,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /** Сессия переживает перезагрузку, поэтому при старте её проверяем. */
   const refresh = useCallback(async () => {
     if (!(await hasSession())) {
       setUser(null);

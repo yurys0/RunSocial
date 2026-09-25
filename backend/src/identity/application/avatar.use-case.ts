@@ -38,7 +38,6 @@ export class AvatarUseCase {
       throw new UserNotFoundError();
     }
 
-    // ключ каждый раз новый, поэтому ссылку можно кэшировать навсегда
     const key = `avatars/${userId}/${randomUUID()}`;
     await this.s3.putObject(key, file.buffer, file.mimetype);
 

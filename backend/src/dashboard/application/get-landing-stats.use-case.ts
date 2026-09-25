@@ -13,7 +13,6 @@ import { CACHE_KEYS, LANDING_TTL_SECONDS } from './cache-keys';
 
 const TOP_LIMIT = 10;
 
-/** Тяжёлые агрегации, поэтому за кэшем. */
 @Injectable()
 export class GetLandingStatsUseCase {
   constructor(

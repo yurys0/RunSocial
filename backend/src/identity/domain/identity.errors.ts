@@ -13,7 +13,6 @@ export class LoginAlreadyTakenError extends ConflictError {
 
 export class InvalidCredentialsError extends ValidationError {
   constructor() {
-    // Намеренно не уточняем, логин или пароль неверен
     super('Неверный логин или пароль');
   }
 }

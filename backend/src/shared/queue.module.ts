@@ -2,7 +2,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-/** BullMQ живёт в отдельной базе Redis (db 1), чтобы не пересекаться с кэшем и pub/sub (db 0). */
 @Module({
   imports: [
     BullModule.forRootAsync({

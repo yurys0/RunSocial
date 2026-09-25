@@ -50,7 +50,6 @@ export class SendFriendRequestUseCase {
     return { id: link.id, status: link.status };
   }
 
-  /** На паре стоит unique-индекс: повторная отправка возвращает ту же строку в PENDING. */
   private async reuse(existing: FriendLink, fromUserId: string): Promise<FriendLink> {
     if (existing.status === FriendLinkStatus.ACCEPTED) {
       throw new AlreadyFriendsError();

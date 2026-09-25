@@ -18,7 +18,6 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await login(form.login, form.password);
-      // Возвращаем туда, откуда пользователя увёл ProtectedRoute
       const from = (location.state as { from?: string } | null)?.from;
       navigate(from ?? '/feed', { replace: true });
     } catch (err) {

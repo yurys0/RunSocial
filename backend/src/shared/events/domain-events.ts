@@ -1,5 +1,3 @@
-/** События слушают инвалидаторы кэша. Кэш общий, поэтому межпроцессная шина не нужна. */
-
 export const ACTIVITY_IMPORTED_EVENT = 'activity.imported';
 export const ACTIVITY_LIKED_EVENT = 'activity.liked';
 export const ACTIVITIES_REMOVED_EVENT = 'activities.removed';
@@ -28,7 +26,6 @@ export class ProfileUpdatedEvent {
   constructor(readonly userId: string) {}
 }
 
-/** Смена видимости меняет и лендинг: закрытые профили в публичную статистику не входят. */
 export class ProfileVisibilityChangedEvent {
   constructor(readonly userId: string) {}
 }

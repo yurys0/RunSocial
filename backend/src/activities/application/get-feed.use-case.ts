@@ -15,7 +15,6 @@ export class GetFeedUseCase {
 
   async execute(userId: string, pagination: Pagination): Promise<ActivityView[]> {
     const friendIds = await this.friends.execute(userId);
-    // Свои пробежки тоже в ленте: иначе у пользователя без друзей она пустая
     const activities = await this.activities.findFeed([userId, ...friendIds], pagination);
     return this.enricher.enrich(activities, userId);
   }

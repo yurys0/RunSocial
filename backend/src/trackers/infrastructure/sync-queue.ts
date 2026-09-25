@@ -1,4 +1,3 @@
-
 export const SYNC_QUEUE_NAME = 'tracker-sync';
 
 export type SyncJobData = {
@@ -6,7 +5,6 @@ export type SyncJobData = {
   trackerAccountId: string;
 };
 
-/** Канал Redis pub/sub, через который воркер шлёт прогресс в API-процесс. */
 export function syncProgressChannel(userId: string): string {
   return `sync:progress:${userId}`;
 }

@@ -16,7 +16,6 @@ export class Activity {
   ) {}
 }
 
-/** Темп считаем в домене: часть трекеров его не отдаёт, правило должно быть одно. */
 export function calculateAvgPaceSecPerKm(distanceMeters: number, durationSeconds: number): number {
   if (distanceMeters <= 0) {
     return 0;

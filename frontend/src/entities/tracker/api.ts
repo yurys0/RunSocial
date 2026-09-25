@@ -9,7 +9,6 @@ export type TrackerAccount = {
   createdAt: string;
 };
 
-/** ADIDAS в API — это Adidas Running (Runtastic). */
 export const PROVIDER_LABELS: Record<TrackerAccount['provider'], string> = {
   STRAVA: 'Strava',
   ADIDAS: 'Adidas Running',

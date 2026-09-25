@@ -34,7 +34,6 @@ export class PrismaAdminRepository implements AdminRepository {
         activities: {
           orderBy: { startedAt: 'desc' },
           take: activitiesLimit,
-          // Маршрут и сырой ответ трекера админке не нужны, а весят много
           select: {
             id: true,
             distanceMeters: true,

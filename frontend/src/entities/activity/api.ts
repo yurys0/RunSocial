@@ -1,7 +1,6 @@
 import { gql, rest } from '../../shared/api/client';
 import { Activity } from './types';
 
-/** Поля, общие для ленты и профиля; routePoints сюда не входит. */
 const ACTIVITY_FIELDS = `
   id
   userId
@@ -25,7 +24,6 @@ export async function fetchFeed(limit = 20, offset = 0): Promise<Activity[]> {
   return data.feed;
 }
 
-/** Маршрут запрашиваем только на странице конкретной пробежки. */
 export async function fetchActivity(id: string): Promise<Activity> {
   const data = await gql<{ activity: Activity }>(
     `query Activity($id: String!) {

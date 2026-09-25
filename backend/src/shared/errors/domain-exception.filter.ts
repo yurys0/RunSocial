@@ -19,7 +19,6 @@ import {
   ValidationError,
 } from './domain-error';
 
-// Порядок важен: ошибки модулей наследуются от этих классов, проверка идёт через instanceof
 const DOMAIN_ERROR_STATUS: Array<[new (...args: never[]) => DomainError, HttpStatus]> = [
   [NotFoundError, HttpStatus.NOT_FOUND],
   [ConflictError, HttpStatus.CONFLICT],
@@ -33,8 +32,6 @@ export class DomainExceptionFilter implements ExceptionFilter {
   private readonly superTokens = new SuperTokensExceptionFilter();
 
   catch(exception: unknown, host: ArgumentsHost) {
-    // Фильтр ловит всё, поэтому ошибки сессии передаём в SuperTokens: он отвечает 401
-    // и обновляет куки
     if (SuperTokensError.isErrorFromSuperTokens(exception)) {
       if (host.getType<'graphql'>() === 'graphql') {
         return this.toSessionGraphQLError(exception);
@@ -42,7 +39,6 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return this.superTokens.catch(exception, host);
     }
 
-    // У GraphQL нет HTTP-ответа: возвращаем ошибку, Apollo положит её в errors[]
     if (host.getType<'graphql'>() === 'graphql') {
       return this.toGraphQLError(exception);
     }
@@ -55,7 +51,6 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    // Ошибки самого Nest (ValidationPipe, guard'ы) уже несут корректный статус
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const messages = extractMessages(exception);
@@ -114,7 +109,6 @@ export class DomainExceptionFilter implements ExceptionFilter {
   }
 }
 
-/** У ValidationPipe сообщения по полям лежат в теле массивом, а message — общий «Bad Request Exception». */
 function extractMessages(exception: HttpException): string[] {
   const body = exception.getResponse();
   const message = typeof body === 'object' ? (body as { message?: string | string[] }).message : body;

@@ -24,7 +24,6 @@ export class ConnectTrackerUseCase {
       throw new TrackerAlreadyConnectedError(dto.provider);
     }
 
-    // Логинимся сразу: об опечатке пользователь узнает здесь, а не после первого синка
     const provider = this.providers.get(dto.provider);
     const session = await provider.authenticate({ login: dto.login, password: dto.password });
 

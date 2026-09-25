@@ -5,7 +5,6 @@ import { Job } from 'bullmq';
 import { SyncActivitiesUseCase } from '../application/sync-activities.use-case';
 import { SYNC_QUEUE_NAME, SyncJobData } from '../infrastructure/sync-queue';
 
-/** Живёт только в воркере: разбор ответов трекера не должен блокировать HTTP. */
 @Processor(SYNC_QUEUE_NAME)
 export class SyncActivitiesProcessor extends WorkerHost {
   private readonly logger = new Logger(SyncActivitiesProcessor.name);

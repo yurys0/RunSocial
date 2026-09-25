@@ -26,7 +26,6 @@ export class DeleteUserUseCase {
     private readonly events: EventEmitter2,
   ) {}
 
-  /** Пробежки, лайки, заявки и привязки трекеров уходят каскадом на уровне БД. */
   async execute(actor: AuthenticatedUser, targetUserId: string): Promise<void> {
     if (!actor.isAdmin) {
       throw new AdminRightsRequiredError();

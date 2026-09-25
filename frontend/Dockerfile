@@ -1,14 +1,11 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-# При параллельных скачиваниях соединение рвётся
 ENV NPM_CONFIG_FETCH_RETRIES=5 \
     NPM_CONFIG_MAXSOCKETS=1
 COPY package.json package-lock.json ./
 COPY frontend/package.json frontend/
 RUN npm ci --workspace frontend --include-workspace-root
 COPY frontend frontend/
-# Vite читает VITE_* из .env-файлов, а не из окружения, поэтому build args пишем в .env.production.
-# Файл лежит в корне монорепо: там же, куда смотрит envDir из vite.config.ts
 ARG VITE_API_URL
 ARG VITE_YANDEX_MAPS_API_KEY
 RUN printf 'VITE_API_URL=%s\nVITE_YANDEX_MAPS_API_KEY=%s\n' \

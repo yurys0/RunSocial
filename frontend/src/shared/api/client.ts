@@ -1,6 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-/** Ошибка с кодом ответа: по нему страницы отличают 401 от прочего. */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -14,7 +13,6 @@ export function apiUrl(path: string): string {
   return `${API_URL}${path}`;
 }
 
-/** REST — мутации. FormData без Content-Type: границу multipart ставит браузер. */
 export async function rest<T>(
   path: string,
   options: { method?: string; body?: unknown } = {},
@@ -38,7 +36,6 @@ export async function rest<T>(
   return payload as T;
 }
 
-/** GraphQL — чтение. Apollo не подключаем: нормализующий кэш здесь не нужен. */
 export async function gql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   const response = await fetch(`${API_URL}/graphql`, {
     method: 'POST',
@@ -54,7 +51,6 @@ export async function gql<T>(query: string, variables?: Record<string, unknown>)
 
   if (payload.errors?.length) {
     const [error] = payload.errors;
-    // Код кладёт наш DomainExceptionFilter — по нему отличаем 401 от прочих ошибок
     const status = Number(error.extensions?.code) || 500;
     throw new ApiError(status, error.message);
   }

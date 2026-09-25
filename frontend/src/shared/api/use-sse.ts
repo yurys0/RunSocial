@@ -4,7 +4,6 @@ import { sseUrl } from './client';
 
 export function useSse<T>(path: string, onEvent: (event: T) => void, enabled = true) {
   const [connected, setConnected] = useState(false);
-  // Колбэк держим в ref, чтобы его обновление не пересоздавало соединение
   const handlerRef = useRef(onEvent);
   handlerRef.current = onEvent;
 

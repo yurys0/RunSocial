@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../domain/user.entity';
 import { avatarUrl } from './avatar-url';
 
-// класс, а не type — иначе Swagger не видит поля ответа
 export class UserView {
   @ApiProperty({ format: 'uuid' })
   id: string;
