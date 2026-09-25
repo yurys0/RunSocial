@@ -20,7 +20,6 @@ declare global {
   }
 }
 
-/** Скрипт грузим один раз на всё приложение. */
 function loadYandexMaps(): Promise<void> {
   if (window.ymaps) {
     return Promise.resolve();
@@ -48,7 +47,6 @@ export function RouteMap({ points }: { points: RoutePoint[] }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Без ключа карта не отрисуется — показываем заглушку, остальная страница работает
     if (!API_KEY) {
       setError('Карта недоступна: не задан VITE_YANDEX_MAPS_API_KEY');
       return;
@@ -78,7 +76,6 @@ export function RouteMap({ points }: { points: RoutePoint[] }) {
           instance.geoObjects.add(
             new window.ymaps.Polyline(coordinates, {}, { strokeColor: '#ff5a1f', strokeWidth: 4 }),
           );
-          // Подпись на метке: цветной кружок сам по себе не читается как «старт»
           instance.geoObjects.add(
             new window.ymaps.Placemark(
               coordinates[0],
@@ -90,7 +87,6 @@ export function RouteMap({ points }: { points: RoutePoint[] }) {
             new window.ymaps.Placemark(
               coordinates[coordinates.length - 1],
               { iconContent: 'Финиш' },
-              // У кольцевого маршрута метки совпадают — финиш должен быть сверху
               { preset: 'islands#redStretchyIcon', zIndex: 700 },
             ),
           );

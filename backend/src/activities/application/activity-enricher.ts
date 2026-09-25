@@ -7,7 +7,6 @@ import {
 import { Activity } from '../domain/activity.entity';
 import { ActivityView, toActivityView } from './activity-view';
 
-/** Счётчики лайков — двумя запросами на всю пачку, а не по паре на каждую активность. */
 @Injectable()
 export class ActivityEnricher {
   constructor(

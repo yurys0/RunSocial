@@ -7,7 +7,6 @@ type QueryState<T> = {
   reload: () => void;
 };
 
-/** Минимальная замена react-query: загрузка, ошибка, ручной перезапуск. */
 export function useQuery<T>(fetcher: () => Promise<T>, deps: unknown[] = []): QueryState<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);

@@ -12,7 +12,6 @@ import { SyncActivitiesProcessor } from './trackers/worker/sync-activities.proce
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../.env', '.env'] }),
-    // Импорт активностей возникает здесь, поэтому слушатель кэша нужен и в воркере
     EventEmitterModule.forRoot(),
     SharedModule,
     QueueModule,

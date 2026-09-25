@@ -8,7 +8,6 @@ import { PrismaDashboardRepository } from './infrastructure/prisma-dashboard.rep
 import { StatsController } from './interface/stats.controller';
 import { DashboardResolver } from './interface/dashboard.resolver';
 
-/** Read-only модуль поверх User и Activity: своих таблиц нет, только агрегаты и кэш. */
 @Module({
   imports: [IdentityModule],
   controllers: [StatsController],

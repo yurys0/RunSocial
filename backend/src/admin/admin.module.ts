@@ -8,7 +8,6 @@ import { ADMIN_REPOSITORY } from './domain/admin.repository';
 import { PrismaAdminRepository } from './infrastructure/prisma-admin.repository';
 import { AdminResolver } from './interface/admin.resolver';
 
-/** Только чтение: изменения идут в обычные ресурсы /users, /activities и /trackers. */
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -21,7 +20,6 @@ import { AdminResolver } from './interface/admin.resolver';
 export class AdminModule implements OnModuleInit {
   constructor(@Inject(ACCOUNT_GATEWAY) private readonly accounts: AccountGateway) {}
 
-  /** Роль должна существовать до того, как её выдадут первому администратору вручную. */
   onModuleInit(): Promise<void> {
     return this.accounts.ensureAdminRole();
   }

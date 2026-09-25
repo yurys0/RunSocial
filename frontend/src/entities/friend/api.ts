@@ -26,7 +26,6 @@ export type FriendRequest = {
 
 const SUMMARY = 'id login displayName avatarUrl';
 
-/** Пустой запрос возвращает всех — на этом держится раздел «Люди». */
 export async function searchUsers(query = ''): Promise<UserSearchResult[]> {
   const data = await gql<{ searchUsers: UserSearchResult[] }>(
     `query People($query: String!) {
@@ -37,7 +36,6 @@ export async function searchUsers(query = ''): Promise<UserSearchResult[]> {
   return data.searchUsers;
 }
 
-/** Списки друзей и заявок приходят одним запросом — ради этого и нужен GraphQL. */
 export async function fetchFriendsPage(): Promise<{
   friends: UserSummary[];
   incomingFriendRequests: FriendRequest[];

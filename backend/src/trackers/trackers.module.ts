@@ -34,7 +34,6 @@ import { TrackersResolver } from './interface/trackers.resolver';
     SyncActivitiesUseCase,
     TrackersResolver,
   ],
-  // SyncActivitiesUseCase нужен процессору очереди, который живёт в WorkerModule
   exports: [SyncActivitiesUseCase],
 })
 export class TrackersModule {}

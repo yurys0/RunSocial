@@ -30,7 +30,6 @@ export function FriendsIcon() {
   );
 }
 
-/** Лупа с силуэтом: две группы фигур рядом в шапке на 22 пикселях не различались. */
 export function PeopleIcon() {
   return (
     <svg {...base}>

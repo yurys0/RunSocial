@@ -16,17 +16,14 @@ import { SharedModule } from './shared/shared.module';
 import { SocialModule } from './social/social.module';
 import { TrackersModule } from './trackers/trackers.module';
 
-/** Процессоров очередей здесь нет: API только ставит задачи, выполняет их WorkerModule. */
 @Module({
   imports: [
-    // Один .env в корне: первый путь для запуска с хоста, второй — внутри контейнера
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../.env', '.env'] }),
     EventEmitterModule.forRoot(),
     SharedModule,
     QueueModule,
     GraphqlModule,
     IdentityModule,
-    // Регистрация создаёт профиль через USER_REPOSITORY, поэтому опции собираются асинхронно
     SuperTokensModule.forRootAsync({
       imports: [IdentityModule],
       inject: [ConfigService, USER_REPOSITORY],

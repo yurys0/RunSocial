@@ -15,7 +15,6 @@ export class GetFriendshipUseCase {
 
     const link = await this.friendLinks.findBetween(viewerId, targetUserId);
     if (!link || link.status === FriendLinkStatus.DECLINED) {
-      // Отклонённая заявка равнозначна отсутствию связи: её можно отправить заново
       return { status: FriendshipStatus.NONE, requestId: null };
     }
     if (link.status === FriendLinkStatus.ACCEPTED) {

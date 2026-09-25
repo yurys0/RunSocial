@@ -61,7 +61,6 @@ export class PrismaDashboardRepository implements DashboardRepository {
     }));
   }
 
-  /** В публичную статистику попадают только открытые профили. */
   private periodFilter(period: StatsPeriod) {
     const visibility = { user: { isPrivate: false } };
     if (period === StatsPeriod.ALL) {

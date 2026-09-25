@@ -6,7 +6,6 @@ import { PrismaService } from './prisma/prisma.service';
 import { RedisService } from './redis/redis.service';
 import { S3Service } from './storage/s3.service';
 
-/** @Global, чтобы доменные модули не перечисляли инфраструктуру в своих imports. */
 @Global()
 @Module({
   providers: [PrismaService, EncryptionService, S3Service, RedisService, CacheService],

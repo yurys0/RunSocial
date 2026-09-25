@@ -5,7 +5,6 @@ import { join } from 'node:path';
 
 import { QueryComplexityPlugin } from './graphql/query-complexity.plugin';
 
-/** Code-first: схема генерируется из декораторов. Нужен только API-процессу. */
 @Module({
   imports: [
     NestGraphQLModule.forRoot<ApolloDriverConfig>({
@@ -13,7 +12,6 @@ import { QueryComplexityPlugin } from './graphql/query-complexity.plugin';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       playground: true,
-      // res нужен guard'у SuperTokens: он обновляет куки сессии прямо в ответе
       context: ({ req, res }: { req: unknown; res: unknown }) => ({ req, res }),
     }),
   ],

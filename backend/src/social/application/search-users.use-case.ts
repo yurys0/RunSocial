@@ -21,7 +21,6 @@ export class SearchUsersUseCase {
   async execute(query: string, viewerId: string, limit = MAX_RESULTS): Promise<UserSearchResult[]> {
     const found = await this.users.search(query.trim(), Math.min(limit, MAX_RESULTS), viewerId);
 
-    // Связи забираем одним запросом на всю выдачу, а не по запросу на пользователя
     const links = await this.friendLinks.findBetweenMany(
       viewerId,
       found.map((user) => user.id),

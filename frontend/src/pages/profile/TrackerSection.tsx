@@ -25,10 +25,8 @@ type SyncEvent = {
 export function TrackerSection({ onImported }: { onImported: () => void }) {
   const { data: trackers, loading, error, reload } = useQuery(fetchTrackers, []);
   const [sync, setSync] = useState<SyncEvent | null>(null);
-  /** Запуск лишь ставит задачу в очередь, поэтому кнопку держим заблокированной до done или error. */
   const [syncingId, setSyncingId] = useState<string | null>(null);
 
-  // Прогресс приходит из процесса воркера через Redis pub/sub
   useSse<SyncEvent>('/trackers/syncs/events', (event) => {
     setSync(event);
     if (event.stage === 'done' || event.stage === 'error') {
@@ -118,7 +116,6 @@ function TrackerRow({
               try {
                 await startSync(tracker.id);
               } catch (err) {
-                // Задача не встала в очередь — события не будет, снимаем блокировку сами
                 onSyncFailed();
                 throw err;
               }
@@ -220,8 +217,6 @@ function ConnectForm({
     return <p className="muted">Все доступные трекеры уже привязаны.</p>;
   }
 
-  // Список провайдеров приходит асинхронно, поэтому выбранное значение берём из него:
-  // иначе форма могла отправить уже привязанного провайдера
   const selectedProvider = available.includes(form.provider as keyof typeof PROVIDER_LABELS)
     ? (form.provider as keyof typeof PROVIDER_LABELS)
     : available[0];

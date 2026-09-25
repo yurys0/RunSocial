@@ -18,7 +18,6 @@ export class FriendRequestAlreadySentError extends ConflictError {
   }
 }
 
-/** Встречная заявка: логичнее принять входящую, чем создавать зеркальную. */
 export class IncomingRequestExistsError extends ConflictError {
   constructor() {
     super('Этот пользователь уже отправил вам заявку — примите её');

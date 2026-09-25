@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { FriendshipStatus } from '../domain/friendship-status';
 import { GetFriendshipUseCase } from './get-friendship.use-case';
 
-/** Единственное место, где решается, можно ли смотреть чужие данные. */
 @Injectable()
 export class CanViewProfileUseCase {
   constructor(private readonly getFriendship: GetFriendshipUseCase) {}

@@ -26,7 +26,6 @@ export class GetUserActivitiesUseCase {
     return this.enricher.enrich(activities, viewerId);
   }
 
-  // закрытый профиль — 403, а не пустой список
   async byLogin(login: string, viewerId: string, pagination: Pagination): Promise<ActivityView[]> {
     const owner = await this.users.findByLogin(login);
     if (!owner) {

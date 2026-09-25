@@ -7,7 +7,6 @@ import { GqlAuthGuard } from '../../shared/auth/gql-auth.guard';
 import { UpdateUserUseCase } from '../application/update-user.use-case';
 import { UpdateProfileInput, UserType } from './dto/user.type';
 
-// чтение профиля — в ProfileResolver модуля activities
 @Resolver(() => UserType)
 @UseGuards(GqlAuthGuard)
 export class IdentityResolver {

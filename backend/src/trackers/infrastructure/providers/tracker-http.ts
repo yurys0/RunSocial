@@ -12,11 +12,9 @@ export type TrackerHttpOptions = {
 export type RequestOptions = {
   headers?: Record<string, string>;
   query?: Record<string, string | number | undefined>;
-  /** Тело уже сериализовано вызывающим кодом: Pacer подписывает ровно ту строку, что отправляет */
   rawBody?: string;
 };
 
-/** Обёртка над fetch: базовый URL, заголовки, прокси. Прокси требует undici ProxyAgent. */
 export class TrackerHttp {
   private readonly logger: Logger;
   private readonly name: string;

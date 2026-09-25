@@ -11,7 +11,6 @@ import {
 
 export const MAX_QUERY_COMPLEXITY = 1000;
 
-// считается до выполнения: поле стоит 1, списки умножают на размер страницы
 @Plugin()
 export class QueryComplexityPlugin implements ApolloServerPlugin {
   private readonly logger = new Logger(QueryComplexityPlugin.name);

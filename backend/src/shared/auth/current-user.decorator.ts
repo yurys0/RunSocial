@@ -9,7 +9,6 @@ import { ADMIN_ROLE } from './roles';
 
 type RequestWithSession = { session?: SessionContainer };
 
-/** Работает и в REST, и в GraphQL: тип контекста определяется на месте. */
 export const CurrentUser = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AuthenticatedUser => {
     const session = requestFromContext(context).session;
@@ -17,7 +16,6 @@ export const CurrentUser = createParamDecorator(
       throw new UnauthorizedException('Сессия не найдена');
     }
 
-    // Роль лежит в payload access-токена — запрос к ядру не нужен
     const roles = UserRoles.UserRoleClaim.getValueFromPayload(
       session.getAccessTokenPayload(),
       {} as UserContext,

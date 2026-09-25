@@ -10,7 +10,6 @@ import { FriendLinkRepository } from '../domain/friend-link.repository';
 export class PrismaFriendLinkRepository implements FriendLinkRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Запись одна на пару, поэтому дружба ищется в обе стороны. */
   async findAcceptedFriendIds(userId: string, pagination?: Pagination): Promise<string[]> {
     const links = await this.prisma.friendLink.findMany({
       where: {
@@ -18,7 +17,6 @@ export class PrismaFriendLinkRepository implements FriendLinkRepository {
         OR: [{ fromUserId: userId }, { toUserId: userId }],
       },
       select: { fromUserId: true, toUserId: true },
-      // без сортировки соседние страницы могут пересекаться
       ...(pagination && {
         orderBy: { updatedAt: 'desc' as const },
         skip: pagination.offset,

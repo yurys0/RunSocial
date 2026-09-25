@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Activity } from '../domain/activity.entity';
 
-/** routePoints здесь нет: маршрут догружается отдельным резолвером. */
 export class ActivityView {
   @ApiProperty({ format: 'uuid' })
   id: string;

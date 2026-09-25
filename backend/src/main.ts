@@ -32,7 +32,6 @@ async function bootstrap() {
     .addCookieAuth('sAccessToken')
     .build();
   SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, openApi), {
-    // за nginx API живёт под /api, иначе «Try it out» шлёт запросы мимо префикса
     patchDocumentOnRequest: (req, _res, document) => ({
       ...document,
       servers: [{ url: (req as Request).get('x-forwarded-prefix') ?? '/' }],

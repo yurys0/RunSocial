@@ -54,7 +54,6 @@ export class GetUserProfileUseCase {
     viewerId: string,
     activitiesLimit: number,
   ): Promise<UserProfile> {
-    // Кэшируем то, что одинаково для всех зрителей; видимость применяется после чтения из кэша
     const cached = await this.cache.wrap(
       CACHE_KEYS.profile(user.id),
       PROFILE_TTL_SECONDS,
@@ -73,7 +72,6 @@ export class GetUserProfileUseCase {
     const base = { ...cached, createdAt: new Date(cached.createdAt), isVisible };
 
     if (!isVisible) {
-      // Закрытый профиль отдаёт только карточку: по ней видно, кому отправлять заявку
       return {
         ...base,
         stats: { activityCount: 0, totalDistanceMeters: 0, totalDurationSeconds: 0 },

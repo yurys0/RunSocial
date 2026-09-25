@@ -23,7 +23,6 @@ export function FriendsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('friends');
 
-  // Второй SSE-канал: уведомления о заявках приходят без перезагрузки страницы
   useSse<FriendEvent>('/friends/events', (event) => {
     setNotice(
       event.type === 'request_received'

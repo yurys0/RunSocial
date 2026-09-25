@@ -36,7 +36,6 @@ export class GetActivityUseCase {
     return this.activities.findRoutePoints(activityId);
   }
 
-  /** Ссылку можно открыть минуя профиль, поэтому доступ проверяется здесь. Закрытая — «не найдена». */
   private async assertVisible(ownerId: string, viewerId: string): Promise<void> {
     const owner = await this.users.findById(ownerId);
     if (!owner) {

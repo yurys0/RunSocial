@@ -56,7 +56,6 @@ export class LikeActivityUseCase {
     }
     await this.likes.unlike(userId, activityId);
 
-    // То же событие, что и при лайке: иначе кэш профиля держал бы старый счётчик до TTL
     const activity = await this.activities.findById(activityId);
     if (activity) {
       this.events.emit(ACTIVITY_LIKED_EVENT, new ActivityLikedEvent(activity.userId, activityId));

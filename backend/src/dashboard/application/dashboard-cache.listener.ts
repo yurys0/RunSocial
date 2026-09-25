@@ -16,7 +16,6 @@ import {
 } from '../../shared/events/domain-events';
 import { CACHE_KEYS } from './cache-keys';
 
-/** Инвалидация кэша по доменным событиям, а не по одному лишь TTL. */
 @Injectable()
 export class DashboardCacheListener {
   private readonly logger = new Logger(DashboardCacheListener.name);
@@ -40,7 +39,6 @@ export class DashboardCacheListener {
 
   @OnEvent(ACTIVITY_LIKED_EVENT)
   async onActivityLiked(event: ActivityLikedEvent): Promise<void> {
-    // Лайк не меняет агрегаты лендинга — сбрасываем только профиль владельца
     await this.cache.del(CACHE_KEYS.profile(event.activityOwnerId));
   }
 

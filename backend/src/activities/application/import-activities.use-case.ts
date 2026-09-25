@@ -9,7 +9,6 @@ import {
 } from '../../shared/events/domain-events';
 import { ACTIVITY_REPOSITORY, ActivityRepository } from '../domain/activity.repository';
 
-/** Единственная точка записи активностей: Trackers не пишет в Activity напрямую. */
 @Injectable()
 export class ImportActivitiesUseCase {
   private readonly logger = new Logger(ImportActivitiesUseCase.name);

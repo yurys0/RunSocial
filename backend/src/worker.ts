@@ -5,7 +5,6 @@ import { NestFactory } from '@nestjs/core';
 
 import { WorkerModule } from './worker.module';
 
-/** Nest-контекст без HTTP: процесс живёт, пока открыто подключение BullMQ к Redis. */
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(WorkerModule);
   await app.init();

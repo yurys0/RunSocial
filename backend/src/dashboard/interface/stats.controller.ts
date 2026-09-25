@@ -6,7 +6,6 @@ import { LandingStatsDto } from '../application/dto/landing-stats.dto';
 import { StatsQueryDto } from '../application/dto/stats-query.dto';
 import { GetLandingStatsUseCase } from '../application/get-landing-stats.use-case';
 
-/** Статистика публичная: guard'ов здесь сознательно нет. */
 @ApiTags('Статистика')
 @Controller('stats')
 export class StatsController {

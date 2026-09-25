@@ -48,7 +48,6 @@ type PacerTrackResponse = {
   data?: { track_data?: string | null; start_time?: number | null } | null;
 };
 
-/** Порт исходного Python-клиента Pacer. */
 @Injectable()
 export class PacerProvider implements TrackerProvider {
   readonly provider = TrackerProviderName.PACER;
@@ -80,7 +79,6 @@ export class PacerProvider implements TrackerProvider {
       email: credentials.login,
       password: createHash('md5').update(credentials.password, 'utf8').digest('hex'),
     };
-    // Тело подписывается и отправляется в одном и том же компактном виде — иначе 401
     const rawBody = JSON.stringify(body);
 
     const auth = await this.http.postJson<PacerAuthResponse>(path, {
@@ -146,7 +144,6 @@ export class PacerProvider implements TrackerProvider {
       return null;
     }
     const endedAt = new Date(endUnix * 1000);
-    // Страховка от мусорных значений: завершение не может быть раньше старта
     return endedAt > startedAt ? endedAt : null;
   }
 
@@ -277,7 +274,6 @@ export class PacerProvider implements TrackerProvider {
     };
   }
 
-  /** Формат дат в запросе активностей — YYMMDD */
   private formatDate(date: Date): string {
     const pad = (value: number) => String(value).padStart(2, '0');
     return `${pad(date.getFullYear() % 100)}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;

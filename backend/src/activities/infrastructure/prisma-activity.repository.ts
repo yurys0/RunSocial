@@ -15,7 +15,6 @@ import {
 export class PrismaActivityRepository implements ActivityRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Пишем по записи: createMany со skipDuplicates не показывает, что оказалось новым. */
   async upsertMany(activities: ImportActivityData[]): Promise<{ created: number; updated: number }> {
     let created = 0;
     let updated = 0;
@@ -71,7 +70,6 @@ export class PrismaActivityRepository implements ActivityRepository {
     await this.prisma.activity.delete({ where: { id } });
   }
 
-  /** routePoints исключён из select: иначе каждая строка ленты тянула бы полный трек. */
   async findFeed(userIds: string[], pagination: Pagination): Promise<Activity[]> {
     if (userIds.length === 0) {
       return [];

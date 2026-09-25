@@ -20,7 +20,6 @@ import { PaginationQueryDto, setPaginationLinks } from '../../shared/pagination/
 import { ActivityView } from '../application/activity-view';
 import { GetUserActivitiesUseCase } from '../application/get-user-activities.use-case';
 
-// не в identity: тот модуль про пробежки не знает
 @ApiTags('Пробежки')
 @ApiCookieAuth()
 @ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })

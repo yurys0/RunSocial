@@ -26,7 +26,6 @@ export class S3Service {
     this.client = new S3Client({
       endpoint: config.getOrThrow<string>('S3_ENDPOINT'),
       region: config.get<string>('S3_REGION') ?? 'us-east-1',
-      // MinIO и большинство S3-совместимых провайдеров работают в path-style
       forcePathStyle: config.get<string>('S3_FORCE_PATH_STYLE') !== 'false',
       credentials: {
         accessKeyId: config.getOrThrow<string>('S3_ACCESS_KEY'),

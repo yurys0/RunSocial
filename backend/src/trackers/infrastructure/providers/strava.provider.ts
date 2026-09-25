@@ -18,7 +18,6 @@ import {
 import { TrackerHttp } from './tracker-http';
 
 const PER_PAGE_MAX = 200;
-/** Защита от бесконечного цикла пагинации — как в Python-версии */
 const MAX_PAGES = 100_000;
 
 type StravaAuthResponse = { access_token?: string };
@@ -45,7 +44,6 @@ type StravaStreamsResponse = {
   time?: StravaStream;
 };
 
-/** Порт исходного Python-клиента Strava. */
 @Injectable()
 export class StravaProvider implements TrackerProvider {
   readonly provider = TrackerProviderName.STRAVA;
@@ -111,7 +109,6 @@ export class StravaProvider implements TrackerProvider {
     return result;
   }
 
-  /** elapsed_time — астрономическое время активности, в отличие от moving_time. */
   private resolveEndedAt(activity: StravaActivity): Date | null {
     if (!activity.elapsed_time || activity.elapsed_time <= 0) {
       return null;
@@ -119,7 +116,6 @@ export class StravaProvider implements TrackerProvider {
     return new Date(new Date(activity.start_date).getTime() + activity.elapsed_time * 1000);
   }
 
-  /** Пагинация курсором `before`: чистый `page` у Strava ограничен по глубине. */
   private async fetchAllActivities(accessToken: string, since: Date | null) {
     const result: StravaActivity[] = [];
     const seen = new Set<number>();
@@ -143,7 +139,6 @@ export class StravaProvider implements TrackerProvider {
         }
       }
 
-      // Инкрементальный синк: пачки идут от новых к старым, дошли до lastSyncAt — дальше не нужно
       const oldest = batch[batch.length - 1];
       const oldestEpoch = this.startEpochUtc(oldest);
       if (since && oldestEpoch * 1000 <= since.getTime()) {
@@ -177,7 +172,6 @@ export class StravaProvider implements TrackerProvider {
       return null;
     }
     const altitude = streams.altitude?.data as number[] | undefined;
-    // stream `time` у Strava — уже секунды от старта, ровно наш timestampOffsetSec
     const time = streams.time?.data as number[] | undefined;
 
     return latlng.map(([lat, lng], index) => ({

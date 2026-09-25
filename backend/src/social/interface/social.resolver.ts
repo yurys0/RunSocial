@@ -17,7 +17,6 @@ import {
   UserSummaryType,
 } from './dto/social.type';
 
-// для списков без аргумента limit
 const LIST_ESTIMATE = 20;
 
 @Resolver()
@@ -32,7 +31,6 @@ export class SocialResolver {
     private readonly removeFriendUseCase: RemoveFriendUseCase,
   ) {}
 
-  // Имя поля задано явно: метод нельзя назвать searchUsers — так называется внедрённый use-case
   @Query(() => [UserSearchResultType], {
     name: 'searchUsers',
     description: 'Пользователи: без query — все, с query — поиск по логину или имени',

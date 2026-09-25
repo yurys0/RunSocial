@@ -16,7 +16,6 @@ export function Button({
   variant?: 'primary' | 'secondary';
   size?: 'sm';
 }) {
-  // className объединяем, а не перезаписываем: снаружи им задают раскладку
   const classes = ['btn'];
   if (variant === 'secondary') classes.push('btn-secondary');
   if (size === 'sm') classes.push('btn-sm');
@@ -75,7 +74,6 @@ export function formatDuration(seconds: number): string {
   return h > 0 ? `${h} ч ${m} мин` : `${m} мин`;
 }
 
-/** Темп трекеры отдают в секундах на километр — показываем как «5:30 /км». */
 export function formatPace(secPerKm: number): string {
   const m = Math.floor(secPerKm / 60);
   const s = Math.round(secPerKm % 60);
@@ -100,7 +98,6 @@ export function plural(count: number, one: string, few: string, many: string): s
   return `${count} ${many}`;
 }
 
-/** Интервал вида «7:00 — 8:15». Если трекер не отдал завершение, показываем только старт. */
 export function formatTimeRange(startedAt: string, endedAt: string | null): string {
   const time = (value: string) =>
     new Date(value).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });

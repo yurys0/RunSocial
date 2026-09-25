@@ -8,7 +8,6 @@ import { FriendRequestNotFoundError } from '../domain/social.errors';
 export class CancelFriendRequestUseCase {
   constructor(@Inject(FRIEND_LINK_REPOSITORY) private readonly friendLinks: FriendLinkRepository) {}
 
-  /** Запись удаляем, а не переводим в DECLINED: отказ — решение получателя, а тут передумал отправитель. */
   async execute(userId: string, requestId: string): Promise<void> {
     const link = await this.friendLinks.findById(requestId);
     const isOwnPending =

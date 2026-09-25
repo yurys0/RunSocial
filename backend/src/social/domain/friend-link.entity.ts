@@ -1,6 +1,5 @@
 import { FriendLinkStatus } from '@prisma/client';
 
-/** Одна сущность и на заявку, и на дружбу — состояние в status, fromUserId всегда отправитель. */
 export class FriendLink {
   constructor(
     readonly id: string,

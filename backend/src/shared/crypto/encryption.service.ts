@@ -7,7 +7,6 @@ const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12; // рекомендованная длина IV для GCM
 const KEY_LENGTH = 32;
 
-/** AES-256-GCM. Формат «iv:authTag:ciphertext» в hex влезает в одно текстовое поле. */
 @Injectable()
 export class EncryptionService {
   private readonly key: Buffer;

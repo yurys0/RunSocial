@@ -1,5 +1,3 @@
-// Пять моделей домена: маршрут живёт в Activity.routePoints (JSONB), отдельной таблицы под него нет.
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,16 +25,14 @@ enum FriendLinkStatus {
   DECLINED
 }
 
-/// id совпадает с идентификатором аккаунта в SuperTokens: пароль и роли хранятся там
 model User {
-  id          String  @id
-  login       String  @unique
+  id          String   @id
+  login       String   @unique
   displayName String
   avatarUrl   String?
-  /// Закрытый профиль: пробежки видны только друзьям, в статистику лендинга не входит
-  isPrivate Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPrivate   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   trackerAccounts     TrackerAccount[]
   activities          Activity[]
@@ -50,10 +46,8 @@ model TrackerAccount {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  provider TrackerProviderName
-  /// Логин/пароль от трекера, зашифрованные AES-256-GCM (свой IV на запись)
+  provider             TrackerProviderName
   encryptedCredentials String
-  /// ID пользователя на стороне трекера: athlete.id | me.guid | account id
   externalUserId       String?
   status               TrackerAccountStatus @default(ACTIVE)
   lastSyncAt           DateTime?
@@ -61,7 +55,6 @@ model TrackerAccount {
 
   activities Activity[]
 
-  // Один аккаунт на провайдера у пользователя — иначе непонятно, какой из двух синкать
   @@unique([userId, provider])
 }
 
@@ -73,18 +66,14 @@ model Activity {
   trackerAccountId String
   trackerAccount   TrackerAccount @relation(fields: [trackerAccountId], references: [id], onDelete: Cascade)
 
-  /// ID активности на стороне трекера — ключ идемпотентности повторного синка
   externalId      String
   distanceMeters  Int
   durationSeconds Int
   avgPaceSecPerKm Int
   startedAt       DateTime
-  /// Фактическое окончание по данным трекера: в durationSeconds время без пауз
   endedAt         DateTime?
 
-  /// Точки маршрута; null — трекер не отдал трек
   routePoints Json?
-  /// Сырой ответ провайдера — чтобы не терять данные, которые пока не маппим
   rawPayload  Json
 
   createdAt DateTime @default(now())
@@ -92,12 +81,10 @@ model Activity {
   likes ActivityLike[]
 
   @@unique([trackerAccountId, externalId])
-  // Лента и профиль всегда читают активности по пользователю в обратном хронологическом порядке
   @@index([userId, startedAt(sort: Desc)])
   @@index([startedAt(sort: Desc)])
 }
 
-// Одна сущность и на заявку, и на состоявшуюся дружбу — состояние в status
 model FriendLink {
   id         String @id @default(uuid())
   fromUserId String

@@ -5,7 +5,6 @@ import { Observable, tap } from 'rxjs';
 
 export const ELAPSED_TIME_HEADER = 'X-Elapsed-Time';
 
-// в GraphQL считаем только корневые поля: вложенные резолверы — часть того же запроса
 @Injectable()
 export class ElapsedTimeInterceptor implements NestInterceptor {
   private readonly logger = new Logger(ElapsedTimeInterceptor.name);
@@ -21,7 +20,6 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        // SSE эмитит много раз, а заголовки уходят один раз
         if (reported) {
           return;
         }

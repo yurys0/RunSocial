@@ -1,5 +1,3 @@
-/** Импортируем только пробежки. Значения взяты из реальных ответов провайдеров. */
-
 export const STRAVA_SUPPORTED_ACTIVITY_TYPES = ['Run'];
 export const STRAVA_SUPPORTED_ACTIVITY_SPORT_TYPES = ['Run'];
 

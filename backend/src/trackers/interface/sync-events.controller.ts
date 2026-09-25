@@ -17,10 +17,6 @@ import { ErrorResponseDto } from '../../shared/errors/error-response.dto';
 import { RedisService } from '../../shared/redis/redis.service';
 import { SyncProgressEvent, syncProgressChannel } from '../infrastructure/sync-queue';
 
-/**
- * Соединение держит API-процесс, события приходят из воркера через Redis pub/sub.
- * Токен — в query: EventSource не умеет слать заголовки.
- */
 @ApiTags('Трекеры')
 @ApiCookieAuth()
 @ApiUnauthorizedResponse({ description: 'Сессия не найдена или истекла', type: ErrorResponseDto })

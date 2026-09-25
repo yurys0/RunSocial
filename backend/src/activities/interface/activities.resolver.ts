@@ -53,13 +53,11 @@ export class ActivitiesResolver {
     return this.likeActivity.unlike(user.userId, id);
   }
 
-  /** Резолвер поля: тяжёлый JSONB читается, только если клиент запросил routePoints. */
   @ResolveField(() => [RoutePointType], { nullable: true })
   routePoints(@CurrentUser() user: AuthenticatedUser, @Parent() activity: ActivityType) {
     return this.getActivity.getRoutePoints(activity.id, user.userId);
   }
 
-  /** Prisma объединяет одинаковые findUnique в один запрос, поэтому N+1 не возникает. */
   @ResolveField(() => ActivityAuthorType)
   async author(@Parent() activity: ActivityType): Promise<ActivityAuthorType> {
     const user = await this.users.findById(activity.userId);
